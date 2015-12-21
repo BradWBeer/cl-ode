@@ -52,7 +52,7 @@
 
 (defcfun-rename-function "dGetConfiguration" :string)
 
-(defvar is-double-precision? t)
+(defvar is-double-precision? nil)
 ;; (setf is-double-precision? (search "ODE_double_precision" (get-configuration)))
 
 
@@ -63,8 +63,11 @@
   (coerce x 'single-float))
 
 
-(defctype dreal (:wrapper :double
-			  :to-c number->dreal))
+(defctype dreal (:wrapper :float
+			  :to-c  number->single-float))
+;; (defctype dreal (:wrapper :double
+;; 			  :to-c number->dreal
+;; 			  :from-c number->single-float))
 
 
 (defmacro infinity (&optional (precision is-double-precision?))
@@ -118,6 +121,22 @@
 				     #'number->single-float
 				     (loop for i from 0 to (1- len)
 					  collect (mem-aref this 'dReal i)))))
+
+(defun vector3->array (this)
+  (coerce (subseq this 0 3) '(SIMPLE-ARRAY SINGLE-FLOAT (3))))
+
+(defun vector4->array (this)
+  (coerce (subseq this 0 4) '(SIMPLE-ARRAY SINGLE-FLOAT (4))))
+
+(defun matrix3->array (this)
+  (coerce (subseq this 0 12) '(SIMPLE-ARRAY SINGLE-FLOAT (12))))
+
+(defun matrix4->array (this)
+  (coerce (subseq this 0 16) '(SIMPLE-ARRAY SINGLE-FLOAT (16))))
+
+(defun matrix4->array (this)
+  (coerce (subseq this 0 48) '(SIMPLE-ARRAY SINGLE-FLOAT (48))))
+
 
 (defun array->vector  (this)
   (cffi:foreign-alloc 'dreal
@@ -216,8 +235,8 @@
 (defcfun-rename-function "dBodyCreate" dBodyID
   (world dWorldID))
 
-(defcfun-rename-function "dBodyDestroy" dBodyID
-  (world dWorldID))
+(defcfun-rename-function "dBodyDestroy" :void
+  (world dBodyID))
 
 (defcfun-rename-function "dBodyGetPosition" dVector3
   (body dBodyID))
@@ -507,7 +526,6 @@
   (extents dVector3)
   (depth :int))
 
-
 (defcfun-rename-function "dJointGroupEmpty" :void
   (jointGroup dJointGroupID))
 
@@ -571,7 +589,7 @@
 (defmethod world-get-gravity ((this world))
   (cffi:with-foreign-object (v 'dVector3)
     (dworldgetgravity this v)
-    (vector->array v 4)))
+    (vector->array v 3)))
 
 (defcfun-rename-function "dWorldStep" :void
   (world dWorldID)

@@ -4,7 +4,7 @@
   :description "Describe cl-ode here"
   :author "Brad Beer (WarWeasle)"
   :license "Specify license here"
-  :depends-on (#:cffi #:sb-cga)
+  :depends-on (#:cffi)
   :serial t
   :components ((:file "package")
 	       (:file "library")
