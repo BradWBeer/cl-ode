@@ -8,6 +8,7 @@
   :serial t
   :components ((:file "package")
 	       (:file "library")
+	       (:file "types")
 	       (:file "bindings")
 	       (:file "utils")
 	       (:file "world")
