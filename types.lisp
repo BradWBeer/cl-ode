@@ -3,55 +3,6 @@
 (defvar is-double-precision? nil)
 (defvar *object-hash*)
 
-(cl:eval-when (:compile-toplevel :load-toplevel)
-  (cl:unless (cl:fboundp 'swig-lispify-noprefix)
-    (cl:defun swig-lispify-noprefix (name flag cl:&optional (package cl:*package*))
-      (cl:labels ((helper (lst last rest cl:&aux (c (cl:car lst)))
-                    (cl:cond
-                      ((cl:null lst)
-                       rest)
-                      ((cl:upper-case-p c)
-                       (helper (cl:cdr lst) 'upper
-                               (cl:case last
-                                 (lower (cl:list* c #\- rest))
-                                 (cl:t (cl:cons c rest)))))
-                      ((cl:lower-case-p c)
-                       (helper (cl:cdr lst) 'lower (cl:cons (cl:char-upcase c) rest)))
-                      ((cl:digit-char-p c)
-                       (helper (cl:cdr lst) 'digit 
-                               (cl:case last
-                                 ((upper lower) (cl:list* c #\- rest))
-                                 (cl:t (cl:cons c rest)))))
-                      ((cl:char-equal c #\_)
-                       (helper (cl:cdr lst) '_ (cl:cons #\- rest)))
-                      (cl:t
-                       (cl:error "Invalid character: ~A" c))))
-                  (strip-prefix (prf str)
-                    (let ((l (length prf)))
-                      (if (and (> (length str) l) (string= prf (subseq str 0 l)))
-			  (subseq str l)
-			  str))))
-        (cl:let ((fix (cl:case flag
-                        ((constant enumvalue) "+")
-                        (variable "*")
-                        (cl:t ""))))
-          (cl:intern
-           (cl:concatenate
-            'cl:string
-            fix
-            (cl:nreverse (helper (cl:concatenate 'cl:list (strip-prefix "d" name)) cl:nil cl:nil))
-            fix)
-           package))))))
-
-
-(defmacro defcfun-rename-function (name &rest rest)
-  (let ((lisp-name (swig-lispify-noprefix name 'function)))
-    `(progn
-       (defcfun (,name ,lisp-name)
-	     ,@rest)
-       (cl:export (swig-lispify-noprefix ,name 'function)))))
-
-
 (defun number->dreal (x)
   (coerce x 'double-float))
 
@@ -175,8 +126,8 @@
 
 (defcstruct dMass
   (mass dReal)
-  (c dVector3)
-  (i dMatrix3))
+  (center dVector3)
+  (inertia dMatrix3))
 
 (define-condition ode-error (error)
   ((error-string :initarg :error-string :reader error-string))
@@ -246,6 +197,7 @@
 (create-pointer-subclass sphere dSphereID geometry dGeomID)
 (create-pointer-subclass box dBoxID geometry dGeomID)
 (create-pointer-subclass plane dPlaneID geometry dGeomID)
+(create-pointer-subclass ray dRayID geometry dGeomID)
 (create-pointer-subclass Contact-Joint dContactJointID joint dJointID)
 
 (defcstruct dSurfaceParameters 

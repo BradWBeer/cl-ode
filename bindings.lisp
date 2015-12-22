@@ -1,5 +1,54 @@
 (in-package #:cl-ode)
 
+(cl:eval-when (:compile-toplevel :load-toplevel)
+  (cl:unless (cl:fboundp 'swig-lispify-noprefix)
+    (cl:defun swig-lispify-noprefix (name flag cl:&optional (package cl:*package*))
+      (cl:labels ((helper (lst last rest cl:&aux (c (cl:car lst)))
+                    (cl:cond
+                      ((cl:null lst)
+                       rest)
+                      ((cl:upper-case-p c)
+                       (helper (cl:cdr lst) 'upper
+                               (cl:case last
+                                 (lower (cl:list* c #\- rest))
+                                 (cl:t (cl:cons c rest)))))
+                      ((cl:lower-case-p c)
+                       (helper (cl:cdr lst) 'lower (cl:cons (cl:char-upcase c) rest)))
+                      ((cl:digit-char-p c)
+                       (helper (cl:cdr lst) 'digit 
+                               (cl:case last
+                                 ((upper lower) (cl:list* c #\- rest))
+                                 (cl:t (cl:cons c rest)))))
+                      ((cl:char-equal c #\_)
+                       (helper (cl:cdr lst) '_ (cl:cons #\- rest)))
+                      (cl:t
+                       (cl:error "Invalid character: ~A" c))))
+                  (strip-prefix (prf str)
+                    (let ((l (length prf)))
+                      (if (and (> (length str) l) (string= prf (subseq str 0 l)))
+			  (subseq str l)
+			  str))))
+        (cl:let ((fix (cl:case flag
+                        ((constant enumvalue) "+")
+                        (variable "*")
+                        (cl:t ""))))
+          (cl:intern
+           (cl:concatenate
+            'cl:string
+            fix
+            (cl:nreverse (helper (cl:concatenate 'cl:list (strip-prefix "d" name)) cl:nil cl:nil))
+            fix)
+           package))))))
+
+
+(defmacro defcfun-rename-function (name &rest rest)
+  (let ((lisp-name (swig-lispify-noprefix name 'function)))
+    `(progn
+       (defcfun (,name ,lisp-name)
+	     ,@rest)
+       (cl:export (swig-lispify-noprefix ,name 'function)))))
+
+
 (defcfun-rename-function "dGetConfiguration" :string)
 
 (defcfun-rename-function "dInitODE" :void)
@@ -21,9 +70,19 @@
 (defcfun-rename-function "dBodyGetRotation" dVector3
   (body dBodyID))
 
+(defcfun "dBodyGetMass" :void
+  (body dBodyID)
+  (mass (:pointer (:struct dMass))))
+
+(defgeneric body-get-mass (this))
+(defmethod body-get-mass ((this body))
+  (with-foreign-object (mass '(:struct dMass))
+    (dbodygetmass this mass)
+    mass))
+   
 (defcfun-rename-function "dBodySetMass" :void
   (body dBodyID)
-  (mass (:pointer dMass)))
+  (mass (:pointer (:struct dMass))))
 
 (defcfun-rename-function "dBodySetPosition" :void
   (body dBodyID)
@@ -70,10 +129,6 @@
 
 
 (defcfun-rename-function "dGeomSetCategoryBits" :void
-  (geom dGeomID)
-  (bits :unsigned-long))
-
-(defcfun-rename-function "dGeomSetCollideBits" :void
   (geom dGeomID)
   (bits :unsigned-long))
 
@@ -337,7 +392,7 @@
   (joint-group dJointGroupID))
 
 (defcfun-rename-function "dMassSetBox" :void
-  (mass (:pointer dMass))
+  (mass (:pointer (:struct dMass)))
   (m dReal)
   (lx dReal)
   (ly dReal)
@@ -345,7 +400,7 @@
 
 
 (defcfun-rename-function "dMassSetBoxTotal" :void
-  (mass (:pointer dMass))
+  (mass (:pointer (:struct dMass)))
   (m dReal)
   (lx dReal)
   (ly dReal)
@@ -353,7 +408,7 @@
 
 
 (defcfun-rename-function "dMassSetZero" :void
-  (mass (:pointer dMass)))
+  (mass (:pointer (:struct dMass))))
 
 (defcfun-rename-function "dRFromAxisAndAngle" :void
   (R dMatrix3)
@@ -404,12 +459,19 @@
   (z dReal))
   
 (defcfun-rename-function "dMassSetSphere" :void
-  (m (:pointer dMass))
+  (m (:pointer (:struct dMass)))
   (density dReal)
   (radius dReal))
 
+(defgeneric body-set-sphere (this density radius))
+(defmethod body-set-sphere ((this body) density radius)
+  (with-foreign-object (mass '(:struct dmass))
+    (mass-set-sphere mass density radius)
+    (body-set-mass this mass)))
+
+
 (defcfun-rename-function "dMassSetSphereTotal" :void
-  (m (:pointer dMass))
+  (m (:pointer (:struct dMass)))
   (total-mass dReal)
   (radius dReal))
 
@@ -420,14 +482,14 @@
   (length dReal))
 
 (defcfun-rename-function "dMassSetCylinder" :void
-  (m (:pointer dMass))
+  (m (:pointer (:struct dMass)))
   (density dReal)
   (direction :int)
   (radius dReal)
   (length dReal))
 
 (defcfun-rename-function "dMassSetCylinderTotal" :void
-  (m (:pointer dMass))
+  (m (:pointer (:struct dMass)))
   (density dReal)
   (direction :int)
   (radius dReal)
@@ -439,33 +501,33 @@
   (length dReal))
 
 (defcfun-rename-function "dMassSetCapsule" :void
-  (m (:pointer dMass))
+  (m (:pointer (:struct dMass)))
   (density dReal)
   (direction :int)
   (radius dReal)
   (length dReal))
 
 (defcfun-rename-function "dMassSetCapsuleTotal" :void
-  (m (:pointer dMass))
+  (m (:pointer (:struct dMass)))
   (density dReal)
   (direction :int)
   (radius dReal)
   (length dReal))
 
 
-(defcfun-rename-function "dCreateRay" dGeomID
+(defcfun-rename-function "dCreateRay" dRayID
   (space dSpaceID)
   (length dReal))
 
 (defcfun-rename-function "dGeomRaySetLength" :void 
-  (ray dGeomID)
+  (ray dRayID)
   (length dReal))
 
 (defcfun-rename-function "dGeomRayGetLength" dReal
-  (ray dGeomID))
+  (ray dRayID))
 
 (defcfun-rename-function "dGeomRaySet" :void 
-  (ray dGeomID)
+  (ray dRayID)
   (px dReal)
   (py dReal)
   (pz dReal)
@@ -474,13 +536,13 @@
   (dz dReal))
 
 (defcfun-rename-function "dGeomRayGet" :void
-  (ray dGeomID)
+  (ray dRayID)
   (start :pointer)
   (dir :pointer))
 
 
 (defcfun-rename-function "dGeomRaySetParams" :void 
-  (ray dGeomID)
+  (ray dRayID)
   (first-contact :int) 
   (backface-cull :int))
 
@@ -490,11 +552,11 @@
 
 
 (defcfun-rename-function "dGeomRaySetClosestHit" :void
-  (ray dGeomID)
+  (ray dRayID)
   (ClosestHit :int))
 
 (defcfun-rename-function "dGeomRayGetClosestHit" :int
-  (ray dGeomID))
+  (ray dRayID))
 
 (defcfun-rename-function "dSpaceDestroy" :void
   (space dSpaceID))
@@ -519,7 +581,7 @@
   (o1 dGeomID)
   (o2 dGeomID)
   (flags :int)
-  (contact (:pointer dContactGeom))
+  (contact (:pointer (:struct dContactGeom)))
   (skip :int))
 
 (defcfun-rename-function "dJointCreateContact" dContactJointID
