@@ -1,5 +1,7 @@
 (in-package #:cl-ode)
 
+(defvar *object-hash*)
+
 (cl:eval-when (:compile-toplevel :load-toplevel)
   (cl:unless (cl:fboundp 'swig-lispify-noprefix)
 1    (cl:defun swig-lispify-noprefix (name flag cl:&optional (package cl:*package*))
@@ -134,7 +136,7 @@
 (defun matrix4->array (this)
   (coerce (subseq this 0 16) '(SIMPLE-ARRAY SINGLE-FLOAT (16))))
 
-(defun matrix4->array (this)
+(defun matrix6->array (this)
   (coerce (subseq this 0 48) '(SIMPLE-ARRAY SINGLE-FLOAT (48))))
 
 
@@ -163,7 +165,9 @@
 	     (format stream "ode function returned error ~A"
 		     (error-string c)))))
 
-(defmacro create-pointer-type (name id)
+(defgeneric destroy (this))
+
+(defmacro create-pointer-type (name id &optional destroy-func)
   (let ((type-name (intern (string-upcase (concatenate 'string (princ-to-string name) "-TYPE")))))
   `(progn 
 
@@ -176,20 +180,52 @@
 							   " object created without pointer!"))
 		 :initarg :pointer)))
      
+     (defmethod initialize-instance :after ((this ,name) &key)
+       (setf (gethash (slot-value this 'pointer) *object-hash*) this))
+
+     (defmethod translate-to-foreign ((val null) (type ,type-name))
+       (null-pointer))
+
      (defmethod translate-to-foreign ((this ,name) (type ,type-name))
        (slot-value this 'pointer))
      
      (defmethod translate-from-foreign (pointer (type ,type-name))
-       (if (null-pointer-p pointer)
-	   (error 'ode-error :error-string "ODE Function returned a NULL!")
-	   (make-instance ',name :pointer pointer))))))
+       (unless (null-pointer-p pointer)
+	   (make-instance ',name :pointer pointer)))
 
-(create-pointer-type world dWorldID)
+     (defmethod destroy ((this ,type-name))
+       (declaim (ignore param))
+       (remhash (slot-value this 'pointer) *object-hash*)
+       (,(or
+	  destroy-func
+	  (intern (string-upcase (concatenate 'string "destroy-" (princ-to-string name))))) pointer)))))
+
+(create-pointer-type world dWorldID )
 (create-pointer-type pspace dSpaceID)
 (create-pointer-type body dBodyID)
-(create-pointer-type geometry dGeomID)
+(create-pointer-type geometry dGeomID Geom-Destroy)
 (create-pointer-type joint dJointID)
-(create-pointer-type joint-group dJointGroupID)
+(create-pointer-type joint-group dJointGroupID JointGroupDestroy)
+
+(defmacro create-pointer-subclass (name id parent parent-id)
+  (let ((type-name (intern (string-upcase (concatenate 'string (princ-to-string name) "-TYPE")))))
+    `(progn
+       (define-foreign-type ,type-name () ()
+			    (:actual-type ,parent-id)
+			    (:simple-parser ,id))
+
+       (defclass ,name (,parent) ())
+       (defmethod translate-from-foreign (pointer (type ,type-name))
+	 (if (null-pointer-p pointer)
+	     (error 'ode-error :error-string "ODE Function returned a NULL!")
+	     (make-instance ',name :pointer pointer)))
+
+       (defmethod translate-to-foreign ((this ,name) (type ,type-name))
+	 (slot-value this 'pointer)))))
+
+(create-pointer-subclass sphere dSphereID geometry dGeomID)
+(create-pointer-subclass box dBoxID geometry dGeomID)
+(create-pointer-subclass plane dPlaneID geometry dGeomID)
 
 (defcstruct dSurfaceParameters 
   (mode Contact-Enum)
@@ -497,13 +533,13 @@
 (defcfun-rename-function "dGeomClearOffset" :void
   (geom dGeomID))
 
-(defcfun-rename-function "dCreateBox" dGeomID
+(defcfun-rename-function "dCreateBox" dBoxID
   (space dSpaceID)
   (lx dReal)
   (ly dReal)
   (lz dReal))
 
-(defcfun-rename-function "dCreatePlane" dGeomID
+(defcfun-rename-function "dCreatePlane" dPlaneID
   (space dSpaceID)
   (a dReal)
   (b dReal)
@@ -586,19 +622,27 @@
   (world dWorldID)
   (gravity :pointer))
 
-(defmethod world-get-gravity ((this world))
-  (cffi:with-foreign-object (v 'dVector3)
-    (dworldgetgravity this v)
-    (vector->array v 3)))
-
 (defcfun-rename-function "dWorldStep" :void
   (world dWorldID)
   (step_size dReal))
 
-(defcfun-rename-function "dCreateSphere" dGeomID
+(defcfun-rename-function "dCreateSphere" dSphereID
   (space dSpaceID)
   (radius dReal))
 
+(defcfun-rename-function "dGeomSphereSetRadius" :void
+  (sphere dSphereID)
+  (radius dReal))
+
+(defcfun-rename-function "dGeomSphereGetRadius" dReal
+  (sphere dSphereID))
+
+(defcfun-rename-function "dGeomSpherePointDepth" dReal
+  (sphere dSphereID)
+  (x dReal)
+  (y dReal)
+  (z dReal))
+  
 (defcfun-rename-function "dMassSetSphere" :void
   (m (:pointer dMass))
   (density dReal)

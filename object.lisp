@@ -1,7 +1,6 @@
 (in-package #:cl-ode)
 
-
-(setf mode-options '(ode::Mu2	  
+(defparameter mode-options '(ode::Mu2	  
 		     ode::Axis-Dep 
 		     ode::FDir1	  
 		     ode::Bounce  

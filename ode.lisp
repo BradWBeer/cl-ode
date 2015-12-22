@@ -1,21 +1,20 @@
 ;;;; cl-ode.lisp
 
 (in-package #:cl-ode)
-
-(defvar *physics-world*)
-(defvar *physics-space*)
-(defvar *physics-contact-group*)
 (defvar *physics-default-max-contacts* 25)  
-(defvar *physics-geometry-hash*)
 
-(defun n->sf (x)
-  (coerce x 'single-float))
+;; (defvar *physics-world*)
+;; (defvar *physics-space*)
+;; (defvar *physics-contact-group*)
+
+;; (defun n->sf (x)
+;;   (coerce x 'single-float))
 
 (defun make-vector (a b c)
   (sb-cga:vec (coerce a 'single-float)
 	      (coerce b 'single-float)
 	      (coerce c 'single-float)))
-w
+
 
 ;; (defmethod get-transform (position rotation)
 ;;   (sb-cga:matrix (n->sf (elt rotation 0)) (n->sf (elt rotation 1)) (n->sf (elt rotation 2))  (n->sf (elt position 0)) 
@@ -23,24 +22,10 @@ w
 ;; 		 (n->sf (elt rotation 8)) (n->sf (elt rotation 9)) (n->sf (elt rotation 10)) (n->sf (elt position 2))
 ;; 		 (n->sf 0)                (n->sf 0)                (n->sf 0)                 (n->sf 1)))
 
-(defun coerce-floats (val)
-  (sb-cga:vec (coerce (aref val 0) 'single-float)
-	      (coerce (aref val 1) 'single-float)
-	      (coerce (aref val 2) 'single-float)))
-
-
-
-(defmacro combine-surface-properties (surface val1 val2 property)
-  (let ((v1 (gensym))
-	(v2 (gensym)))
-    
-    `(setf (foreign-slot-value ,surface '(:struct ode::dSurfaceParameters) ,property)
-	   (let ((,v1 ,val1)
-		 (,v2 ,val2))
-	     (cond ((and ,v1 ,v2) (/ (+ ,v1 ,v2) 2))
-		   ((and (null ,v1) ,v2) ,v2)
-		   ((and (null ,v2) ,v1) ,v1)
-		   (t 0))))))
+;; (defun coerce-floats (val)
+;;   (sb-cga:vec (coerce (aref val 0) 'single-float)
+;; 	      (coerce (aref val 1) 'single-float)
+;; 	      (coerce (aref val 2) 'single-float)))
 
 
 
@@ -59,15 +44,12 @@ w
 
 
 
-
-
-
 (defun physics-near-handler (data o1 o2)
 
   (unless (cffi:pointer-eq o1 o2)
     
-    (let* ((lisp-object1 (gethash (pointer-address o1) *physics-geometry-hash*))
-	   (lisp-object2 (gethash (pointer-address o2) *physics-geometry-hash*)))
+    (let* ((lisp-object1 (gethash (pointer-address o1) *object-hash*))
+	   (lisp-object2 (gethash (pointer-address o2) *object-hash*)))
 
       (when (and lisp-object1 lisp-object2)
 	
@@ -96,7 +78,7 @@ w
   (world-set-angular-damping-threshold *physics-world* .005)
   (world-set-auto-disable-flag  *physics-world* 1)
   
-  (setf *physics-geometry-hash* (make-hash-table :test 'eql)))
+  (setf *object-hash* (make-hash-table :test 'eql)))
 
 (defun physics-step (step handler)
 
