@@ -70,19 +70,19 @@
 (defcfun-rename-function "dBodyGetRotation" dVector3
   (body dBodyID))
 
-(defcfun "dBodyGetMass" :void
+(defcfun-rename-function "dBodyGetMass" :void
   (body dBodyID)
-  (mass (:pointer (:struct dMass))))
+  (mass dMass))
 
-(defgeneric body-get-mass (this))
-(defmethod body-get-mass ((this body))
-  (with-foreign-object (mass '(:struct dMass))
-    (dbodygetmass this mass)
-    mass))
+;; (defgeneric body-get-mass (this))
+;; (defmethod body-get-mass ((this body))
+;;   (with-foreign-object (mass '(:struct dMass))
+;;     (dbodygetmass this mass)
+;;     mass))
    
 (defcfun-rename-function "dBodySetMass" :void
   (body dBodyID)
-  (mass (:pointer (:struct dMass))))
+  (mass dMass))
 
 (defcfun-rename-function "dBodySetPosition" :void
   (body dBodyID)
@@ -392,7 +392,7 @@
   (joint-group dJointGroupID))
 
 (defcfun-rename-function "dMassSetBox" :void
-  (mass (:pointer (:struct dMass)))
+  (mass dMass)
   (m dReal)
   (lx dReal)
   (ly dReal)
@@ -400,7 +400,7 @@
 
 
 (defcfun-rename-function "dMassSetBoxTotal" :void
-  (mass (:pointer (:struct dMass)))
+  (mass dMass)
   (m dReal)
   (lx dReal)
   (ly dReal)
@@ -408,7 +408,7 @@
 
 
 (defcfun-rename-function "dMassSetZero" :void
-  (mass (:pointer (:struct dMass))))
+  (mass dMass))
 
 (defcfun-rename-function "dRFromAxisAndAngle" :void
   (R dMatrix3)
@@ -459,19 +459,19 @@
   (z dReal))
   
 (defcfun-rename-function "dMassSetSphere" :void
-  (m (:pointer (:struct dMass)))
+  (m dMass)
   (density dReal)
   (radius dReal))
 
-(defgeneric body-set-sphere (this density radius))
-(defmethod body-set-sphere ((this body) density radius)
-  (with-foreign-object (mass '(:struct dmass))
-    (mass-set-sphere mass density radius)
-    (body-set-mass this mass)))
+;; (defgeneric body-set-sphere (this density radius))
+;; (defmethod body-set-sphere ((this body) density radius)
+;;   (with-foreign-object (mass '(:struct dmass))
+;;     (mass-set-sphere mass density radius)
+;;     (body-set-mass this mass)))
 
 
 (defcfun-rename-function "dMassSetSphereTotal" :void
-  (m (:pointer (:struct dMass)))
+  (m dMass)
   (total-mass dReal)
   (radius dReal))
 
@@ -482,14 +482,14 @@
   (length dReal))
 
 (defcfun-rename-function "dMassSetCylinder" :void
-  (m (:pointer (:struct dMass)))
+  (m dMass)
   (density dReal)
   (direction :int)
   (radius dReal)
   (length dReal))
 
 (defcfun-rename-function "dMassSetCylinderTotal" :void
-  (m (:pointer (:struct dMass)))
+  (m dMass)
   (density dReal)
   (direction :int)
   (radius dReal)
@@ -501,14 +501,14 @@
   (length dReal))
 
 (defcfun-rename-function "dMassSetCapsule" :void
-  (m (:pointer (:struct dMass)))
+  (m dMass)
   (density dReal)
   (direction :int)
   (radius dReal)
   (length dReal))
 
 (defcfun-rename-function "dMassSetCapsuleTotal" :void
-  (m (:pointer (:struct dMass)))
+  (m dMass)
   (density dReal)
   (direction :int)
   (radius dReal)

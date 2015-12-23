@@ -59,6 +59,7 @@
   (:Approx1-N    #x4000)
   (:Approx1      #x7000))
 
+(defgeneric destroy (this))
 
 (defun vector->array  (this len)
   (make-array len
@@ -124,10 +125,48 @@
    (surface-slip2 :INITFORM 0 :INITARG :slip2 :ACCESSOR surface-slip2)))
 
 
-(defcstruct dMass
+(defcstruct dMass-struct
   (mass dReal)
   (center dVector3)
   (inertia dMatrix3))
+
+(define-foreign-type mass-type () ()
+		     (:actual-type :pointer)
+		     (:simple-parser dMass))
+
+(defclass mass ()
+  ((pointer :initform (foreign-alloc '(:struct dMass-struct))
+	    :initarg :pointer)))
+
+(defmethod translate-to-foreign ((this mass) (type mass-type))
+  (slot-value this 'pointer))
+
+(defmethod translate-from-foreign (pointer (type mass-type))
+       (unless (null-pointer-p pointer)
+	   (make-instance 'mass :pointer pointer)))
+
+(defgeneric center (this))
+(defmethod center ((this mass))
+  (foreign-slot-value (slot-value this 'pointer) '(:struct dmass-struct) 'center))
+
+(defmethod (setf center) (val (this mass))
+  (setf (foreign-slot-value (slot-value this 'pointer) '(:struct dmass-struct) 'center)
+	val))
+
+(defgeneric mass (this))
+(defmethod mass ((this mass))
+  (foreign-slot-value (slot-value this 'pointer) '(:struct ode::dmass-struct) 'mass))
+
+(defgeneric inertia (this))
+(defmethod inertia ((this mass))
+  (foreign-slot-value (slot-value this 'pointer) '(:struct ode::dmass-struct) 'inertia))
+
+(defmethod (setf inertia) (val (this mass))
+  (setf (foreign-slot-value (slot-value this 'pointer) '(:struct ode::dmass-struct) 'inertia)
+ 	val))
+
+(defmethod destroy ((this mass))
+  (foreign-free (slot-value this 'pointer)))
 
 (define-condition ode-error (error)
   ((error-string :initarg :error-string :reader error-string))
@@ -135,7 +174,6 @@
 	     (format stream "ode function returned error ~A"
 		     (error-string c)))))
 
-(defgeneric destroy (this))
 
 (defmacro create-pointer-type (name id &key destructor superclass)
   (let ((type-name (intern (string-upcase (concatenate 'string (princ-to-string name) "-TYPE")))))
