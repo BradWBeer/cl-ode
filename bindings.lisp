@@ -61,6 +61,9 @@
 (defcfun-rename-function "dBodyCreate" dBodyID
   (world dWorldID))
 
+(defcfun-rename-function "dBodyGetWorld" dWorldID
+  (body dBodyID))
+
 (defcfun-rename-function "dBodyDestroy" :void
   (world dBodyID))
 
@@ -126,6 +129,13 @@
 
 (defcfun-rename-function "dBodyIsEnabled" :int
   (body dBodyID))
+
+(defcfun-rename-function "dBodyGetFirstGeom" dGeomID
+  (body dBodyID))
+
+(defcfun-rename-function "dBodyGetNextGeom" dGeomID
+  (geom dGeomID))
+
 
 
 (defcfun-rename-function "dGeomSetCategoryBits" :void
@@ -288,10 +298,9 @@
 (defcfun-rename-function "dBodySetAutoDisableDefaults" :void 
   (body dBodyID))
 
-(defcfun-rename-function "dBodySetMovedCallback" :void 
+(defcfun ("dBodySetMovedCallback" Body-Set-Moved-Callback) :void 
   (body dBodyID)
   (callback :pointer))
-
 
 (defcfun-rename-function "dBodyGetLinearDamping" dReal
   (body dBodyID))
@@ -368,10 +377,10 @@
   (geom dGeomID)
   (body dBodyID))
 
-(defcfun-rename-function "dHashSpaceCreate" dSpaceID
+(defcfun-rename-function "dHashSpaceCreate" dHashSpaceID
   (space dSpaceID))
 
-(defcfun-rename-function "dQuadTreeSpaceCreate" dSpaceID
+(defcfun-rename-function "dQuadTreeSpaceCreate" dQuadSpaceID
   (space dSpaceID)
   (center dVector3)
   (extents dVector3)
@@ -476,7 +485,7 @@
   (radius dReal))
 
 
-(defcfun-rename-function "dCreateCylinder" dGeomID
+(defcfun-rename-function "dCreateCylinder" dCylinderID
   (space dSpaceID)
   (radius dReal)
   (length dReal))
@@ -495,7 +504,7 @@
   (radius dReal)
   (length dReal))
 
-(defcfun-rename-function "dCreateCapsule" dGeomID
+(defcfun-rename-function "dCreateCapsule" dCapsuleID
   (space dSpaceID)
   (radius dReal)
   (length dReal))

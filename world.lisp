@@ -1,14 +1,23 @@
 (in-package :cl-ode)
 
-(defgeneric world-get-gravity (this))
+(defclass proto-world ()
+  ((contact-group :initform (joint-group-create 0)
+		  :initarg  :joint-group
+		  :reader   contact-group)
+   (step :initform 1/60
+	 :initarg  :step
+	 :accessor time-step)))
+   
+				 
+(defmethod destroy :before ((this proto-world))
+  (destroy (contact-group this))
+  (setf (slot-value this 'contact-group) nil))
+		    
 
-(defmethod world-get-gravity ((this world))
-  (cffi:with-foreign-object (v 'dVector3)
-    (dworldgetgravity this v)
-    (vector->array v 3)))
+(create-pointer-type world dWorldID :superclass proto-world)
+
 
 (defgeneric world-set-defaults (this &key))
-
 (defmethod world-set-defaults ((this world) &key)
   (world-set-gravity this 0 -6 0)
   (world-set-cfm this 1e-5)

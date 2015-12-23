@@ -1,63 +1,35 @@
 (in-package #:cl-ode)
 
-(defclass physics-body (refcount)
-  ((pointer :initform nil
-	    :initarg :pointer
-	    :reader pointer)
-   (mass :initform nil
-	 :initarg :mass
-	 :reader mass)))
+(create-pointer-type body dBodyID)
 
-(defmethod initialize-instance :after ((this physics-body) &key world)
-  
-  (if world 
-      (unless (slot-value this 'pointer)
-	(setf (slot-value this 'pointer) (body-create world))
+(defmethod initialize-instance :after ((this body) &key)
+  (body-set-moved-callback this (callback moved-callback)))
 
-	(when (mass this)
-	  (body-set-mass (pointer this) (pointer (mass this)))
-	  (ref (mass this))))
-      
-      (error "a physics-body requires a world!")))
+(defmethod body-get-transform ((this body))
+  (let ((position (body-get-position this))
+	(rotation (body-get-rotation this)))
+    (make-array 16
+		:element-type 'single-float
+		:initial-contents (list (elt rotation 0) (elt rotation 4) (elt rotation 8)  0.0
+					(elt rotation 1) (elt rotation 5) (elt rotation 9)  0.0
+					(elt rotation 2) (elt rotation 6) (elt rotation 10) 0.0
+					(elt position 0) (elt position 1) (elt position 2)  1.0))))
 
 
-(defmethod unload ((this physics-body) &key)
-  (when (mass this)
-    (unref (mass this)))
+(defmethod body-set-transform ((this body) (m array))
 
-  (when (pointer this)
-    (body-destroy (pointer this))
-    (setf (slot-value this 'pointer) nil)))
+  (body-set-position this (elt m 12) (elt m 13) (elt m 14)))
 
+(defmethod body-moved-callback ((this body) &key)
 
+  (format t "Body-Moved-Callback ~A: ~A~%" this (body-get-position this)))
 
-(defmethod set-transform ((body physics-body) (matrix SIMPLE-ARRAY))
-  (with-foreign-object (rot 'dReal 12)
-    (loop for i from 0 to 11
-       do (setf (mem-aref rot 'dreal i) 0))
+(defmethod body-get-geoms ((this body) &key)
 
-    (loop
-       for pos in '(0 4 8 1 5 9 2 6 10)
-       for i from 0 to 11
-	 
-       do (setf (mem-aref rot 'dreal i) (elt matrix pos)))
-
-    (body-set-rotation (pointer body) rot))
-  
-  (with-foreign-object (pos 'dreal 4)
-    (loop for i from 0 to 3 do (setf (mem-aref pos 'dreal i) 0))
-
-    (body-set-position (pointer body)
-		       (elt matrix 3)
-		       (elt matrix 7)
-		       (elt matrix 11))))
-
-
-(defmethod add-to-body-velocity ((this physics-body) vel)
-  (let* ((p (pointer this))
-	 (v (body-get-linear-vel p)))
-    (body-set-linear-vel p
-			 (+ (aref v 0) (first vel))
-			 (+ (aref v 1) (second vel))
-			 (+ (aref v 2) (third vel)))
-    (values v (body-get-linear-vel p))))
+  (let ((first-body (body-get-first-geom this)))
+    (when first-body
+      (cons first-body
+	    (loop
+	       for b = (body-get-next-geom (or b first-body))
+	       while b
+	       collect b)))))

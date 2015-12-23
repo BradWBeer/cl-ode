@@ -26,9 +26,9 @@
      #:physics-cylinder
      #:physics-capsule
      #:physics-plane
-     #:physics-init
+     #:init
      #:physics-step
-     #:physics-uninit
+     #:uninit
      #:body #:pointer
      #:enabled
 

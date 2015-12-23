@@ -59,37 +59,6 @@
   (:Approx1-N    #x4000)
   (:Approx1      #x7000))
 
-(defgeneric destroy (this))
-
-(defun vector->array  (this len)
-  (make-array len
-	      :element-type 'single-float
-	      :initial-contents (map 'list
-				     #'number->single-float
-				     (loop for i from 0 to (1- len)
-					  collect (mem-aref this 'dReal i)))))
-
-(defun vector3->array (this)
-  (coerce (subseq this 0 3) '(SIMPLE-ARRAY SINGLE-FLOAT (3))))
-
-(defun vector4->array (this)
-  (coerce (subseq this 0 4) '(SIMPLE-ARRAY SINGLE-FLOAT (4))))
-
-(defun matrix3->array (this)
-  (coerce (subseq this 0 12) '(SIMPLE-ARRAY SINGLE-FLOAT (12))))
-
-(defun matrix4->array (this)
-  (coerce (subseq this 0 16) '(SIMPLE-ARRAY SINGLE-FLOAT (16))))
-
-(defun matrix6->array (this)
-  (coerce (subseq this 0 48) '(SIMPLE-ARRAY SINGLE-FLOAT (48))))
-
-
-(defun array->vector  (this)
-  (cffi:foreign-alloc 'dreal
-		      :count (length this)
-		      :initial-contents (loop for i from 0 to (1- (length this))
-					     collect (aref this i))))
   
 (defctype dVector3 (:array dReal 4))
 (defctype dVector4 (:array dReal 4))
@@ -98,75 +67,8 @@
 (defctype dMatrix6 (:array dReal 48))
 (defctype dQuaternion (:array dReal 4))
 
-(defclass proto-geometry () 
-  ((surface-mode :initform '(:bounce :soft-CFM)
-		 :initarg :mode
-		 :accessor surface-mode
-		 :type :int)
-   (surface-mu :INITFORM 1d100 :INITARG :mu :ACCESSOR surface-mu)
-   (surface-mu2 :INITFORM 0 :INITARG :mu2 :ACCESSOR surface-mu2)
-   (surface-rho :INITFORM .1d0 :INITARG :rho :ACCESSOR surface-rho)
-   (surface-rho2 :INITFORM 0 :INITARG :rho2 :ACCESSOR surface-rho2)
-   (surface-rhon :INITFORM 0 :INITARG :rhon :ACCESSOR surface-rhon)
-   (surface-bounce :INITFORM 0 :INITARG :bounce :ACCESSOR surface-bounce)
-   (surface-bounce-vel :INITFORM 0 :INITARG :bounce-vel :ACCESSOR
-		       surface-bounce-vel)
-   (surface-soft-erp :INITFORM 0 :INITARG :soft-erp :ACCESSOR
-		     surface-soft-erp)
-   (surface-soft-cfm :INITFORM 0 :INITARG :soft-cfm :ACCESSOR
-		     surface-soft-cfm)
-   (surface-motion1 :INITFORM 0 :INITARG :motion1 :ACCESSOR
-		    surface-motion1)
-   (surface-motion2 :INITFORM 0 :INITARG :motion2 :ACCESSOR
-		    surface-motion2)
-   (surface-motionn :INITFORM 0 :INITARG :motionn :ACCESSOR
-		    surface-motionn)
-   (surface-slip1 :INITFORM 0 :INITARG :slip1 :ACCESSOR surface-slip1)
-   (surface-slip2 :INITFORM 0 :INITARG :slip2 :ACCESSOR surface-slip2)))
+(defgeneric destroy (this))
 
-
-(defcstruct dMass-struct
-  (mass dReal)
-  (center dVector3)
-  (inertia dMatrix3))
-
-(define-foreign-type mass-type () ()
-		     (:actual-type :pointer)
-		     (:simple-parser dMass))
-
-(defclass mass ()
-  ((pointer :initform (foreign-alloc '(:struct dMass-struct))
-	    :initarg :pointer)))
-
-(defmethod translate-to-foreign ((this mass) (type mass-type))
-  (slot-value this 'pointer))
-
-(defmethod translate-from-foreign (pointer (type mass-type))
-       (unless (null-pointer-p pointer)
-	   (make-instance 'mass :pointer pointer)))
-
-(defgeneric center (this))
-(defmethod center ((this mass))
-  (foreign-slot-value (slot-value this 'pointer) '(:struct dmass-struct) 'center))
-
-(defmethod (setf center) (val (this mass))
-  (setf (foreign-slot-value (slot-value this 'pointer) '(:struct dmass-struct) 'center)
-	val))
-
-(defgeneric mass (this))
-(defmethod mass ((this mass))
-  (foreign-slot-value (slot-value this 'pointer) '(:struct ode::dmass-struct) 'mass))
-
-(defgeneric inertia (this))
-(defmethod inertia ((this mass))
-  (foreign-slot-value (slot-value this 'pointer) '(:struct ode::dmass-struct) 'inertia))
-
-(defmethod (setf inertia) (val (this mass))
-  (setf (foreign-slot-value (slot-value this 'pointer) '(:struct ode::dmass-struct) 'inertia)
- 	val))
-
-(defmethod destroy ((this mass))
-  (foreign-free (slot-value this 'pointer)))
 
 (define-condition ode-error (error)
   ((error-string :initarg :error-string :reader error-string))
@@ -189,7 +91,7 @@
 		 :initarg :pointer)))
      
      (defmethod initialize-instance :after ((this ,name) &key)
-       (setf (gethash (slot-value this 'pointer) *object-hash*) this))
+		(setf (gethash (cffi:pointer-address (slot-value this 'pointer)) *object-hash*) this))
 
      (defmethod translate-to-foreign ((val null) (type ,type-name))
        (null-pointer))
@@ -198,15 +100,17 @@
        (slot-value this 'pointer))
      
      (defmethod translate-from-foreign (pointer (type ,type-name))
-       (unless (null-pointer-p pointer)
-	   (make-instance ',name :pointer pointer)))
+         (unless (null-pointer-p pointer)
+	   (or (gethash (cffi:pointer-address pointer) *object-hash*)
+	       (setf (gethash (cffi:pointer-address pointer) *object-hash*) (make-instance ',name :pointer pointer)))))
 
-     (defmethod destroy ((this ,type-name))
+     (defmethod destroy ((this ,name))
        (declaim (ignore param))
-       (remhash (slot-value this 'pointer) *object-hash*)
+       (remhash (cffi:pointer-address (slot-value this 'pointer)) *object-hash*)
        (,(or
 	  destructor
-	  (intern (string-upcase (concatenate 'string "destroy-" (princ-to-string name))))) pointer)))))
+	  (intern (string-upcase (concatenate 'string (princ-to-string name) "-destroy")))) this)
+       (setf (slot-value this 'pointer) nil)))))
 
 (defmacro create-pointer-subclass (name id parent parent-id)
   (let ((type-name (intern (string-upcase (concatenate 'string (princ-to-string name) "-TYPE")))))
@@ -224,48 +128,5 @@
        (defmethod translate-to-foreign ((this ,name) (type ,type-name))
 	 (slot-value this 'pointer)))))
 
-(create-pointer-type world dWorldID )
-(create-pointer-type pspace dSpaceID)
-(create-pointer-type body dBodyID)
-(create-pointer-type geometry dGeomID :destructor Geom-Destroy :superclass proto-geometry)
-(create-pointer-type joint dJointID)
-(create-pointer-type joint-group dJointGroupID :destructor Joint-Group-Destroy)
 
 
-(create-pointer-subclass sphere dSphereID geometry dGeomID)
-(create-pointer-subclass box dBoxID geometry dGeomID)
-(create-pointer-subclass plane dPlaneID geometry dGeomID)
-(create-pointer-subclass ray dRayID geometry dGeomID)
-(create-pointer-subclass Contact-Joint dContactJointID joint dJointID)
-
-(defcstruct dSurfaceParameters 
-  (mode Contact-Enum)
-  (mu dReal)
-  (mu2 dReal)
-  (rho dReal)
-  (rho2 dReal)
-  (rhoN dReal)
-  (bounce dReal)
-  (bounce-vel dReal)
-  (soft-erp dReal)
-  (soft-cfm dReal)
-  (motion1 dReal)
-  (motion2 dReal)
-  (motionN dReal)
-  (slip1 dReal)
-  (slip2 dReal))
-
-(defcstruct dContactGeom 
-  (pos dVector3)
-  (normal dVector3)
-  (depth dReal)
-  (g1 dGeomID)
-  (g2 dGeomID)
-  (side1 :int)
-  (side2 :int))
-
-
-(defcstruct dContact 
-  (surface (:struct dSurfaceParameters))
-  (geom (:struct dContactGeom))
-  (fdir1 dVector3))

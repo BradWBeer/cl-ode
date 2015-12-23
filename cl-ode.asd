@@ -9,11 +9,15 @@
   :components ((:file "package")
 	       (:file "library")
 	       (:file "types")
+	       (:file "mass")
+	       (:file "world")
+	       (:file "spaces")
+	       (:file "body")
+	       (:file "geometry")
+	       (:file "joints")
 	       (:file "bindings")
 	       (:file "utils")
-	       (:file "world")
-	       ;; (:file "ode")
-	       ;; (:file "mass")
+
 	       ;; (:file "body")
 	       ;; (:file "object")
 	       ;; (:file "sphere")
@@ -24,7 +28,7 @@
 	       ;; (:file "ray")
 	       ;; (:file "spring")
 	       ;; (:file "shapes")
-
+	       (:file "ode")
 	       ))
 
 
