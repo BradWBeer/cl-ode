@@ -1,11 +1,11 @@
 (in-package :cl-ode)
 
 (defclass proto-geometry () 
-  ((surface-mode :initform '(:bounce :soft-CFM)
+  ((surface-mode :initform '(:bounce :rolling :soft-CFM)
 		 :initarg :mode
 		 :accessor surface-mode
 		 :type :int)
-   (surface-mu :INITFORM 1d100 :INITARG :mu :ACCESSOR surface-mu)
+   (surface-mu :INITFORM 1d10 :INITARG :mu :ACCESSOR surface-mu)
    (surface-mu2 :INITFORM 0 :INITARG :mu2 :ACCESSOR surface-mu2)
    (surface-rho :INITFORM .1d0 :INITARG :rho :ACCESSOR surface-rho)
    (surface-rho2 :INITFORM 0 :INITARG :rho2 :ACCESSOR surface-rho2)
@@ -53,17 +53,44 @@
   (body-set-position this (elt m 12) (elt m 13) (elt m 14))
   (body-set-rotation this m))
 
+
 (defmethod combine-physics-objects ((this geometry) (that geometry))
 
   (let ((params (make-instance 'surface-parameters)))
-    
-    
-;;    	  (cffi:foreign-bitfield-value 'Contact-Enum
-    ;;(union (surface-mode this) (surface-mode that))))
-    params
-    
-    ))
 
+    (let ((mode (setf (surface-parameters-mode params)
+		      (union (surface-Mode this) (surface-Mode this)))))
+
+      (setf (surface-parameters-mu params)
+	    (* (surface-mu this) (surface-mu that)))
+      
+      (when (member :mu2 mode)
+	(setf (surface-parameters-mu2 params)
+	      (* (surface-mu2 this) (surface-mu2 that))))
+      
+      (when (member :bounce mode)
+	
+	(setf (surface-parameters-bounce params)
+	      (* (surface-bounce this) (surface-bounce that)))
+	
+	(setf (surface-parameters-bounce-vel params)
+	      (max (surface-bounce-vel this) (surface-bounce-vel that))))
+      
+      (when (member :rolling mode)
+	
+	(setf (surface-parameters-rho params)
+	      (* (surface-rho this) (surface-rho that)))
+	
+	
+	(setf (surface-parameters-rho2 params)
+	      (* (surface-rho2 this) (surface-rho2 that)))
+	
+	(setf (surface-parameters-rhoN params)
+	      (* (surface-rhoN this) (surface-rhoN that)))))
+    params))
+    
+
+      
 
 
 ;; (defmacro combine-surface-properties (surface val1 val2 property)
@@ -80,3 +107,23 @@
 
 
 
+
+
+
+    ;; surface-parameters-Mu2	  
+    ;; surface-parameters-Axis-Dep 
+    ;; surface-parameters-FDir1	  
+    ;; surface-parameters-Bounce  
+    ;; surface-parameters-Soft-ERP 
+    ;; surface-parameters-Soft-CFM 
+    ;; surface-parameters-Motion1 
+    ;; surface-parameters-Motion2 
+    ;; surface-parameters-MotionN 
+    ;; surface-parameters-Slip1	  
+    ;; surface-parameters-Slip2	  
+    ;; surface-parameters-Rolling 
+    ;; surface-parameters-Approx0   
+    ;; surface-parameters-Approx1-1 
+    ;; surface-parameters-Approx1-2 
+    ;; surface-parameters-Approx1-N 
+    ;; surface-parameters-Approx1
