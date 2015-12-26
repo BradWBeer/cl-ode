@@ -38,9 +38,9 @@
 (create-pointer-subclass ray dRayID geometry dGeomID)
 
 
-(defmethod geom-get-transform ((this geometry))
-  (let ((position (geom-get-position this))
-	(rotation (geom-get-rotation this)))
+(defmethod body-get-transform ((this geometry))
+  (let ((position (body-get-position this))
+	(rotation (body-get-rotation this)))
     (make-array 16
 		:element-type 'single-float
 		:initial-contents (list (elt rotation 0) (elt rotation 4) (elt rotation 8)  0.0
@@ -48,10 +48,22 @@
 					(elt rotation 2) (elt rotation 6) (elt rotation 10) 0.0
 					(elt position 0) (elt position 1) (elt position 2)  1.0))))
 
+(defmethod body-set-transform ((this geometry) (m array))
 
-(defmethod geom-set-transform ((this geometry) (m array))
+  (body-set-position this (elt m 12) (elt m 13) (elt m 14))
+  (body-set-rotation this m))
 
-  (geom-set-position this (elt m 12) (elt m 13) (elt m 14)))
+(defmethod combine-physics-objects ((this geometry) (that geometry))
+
+  (let ((params (make-instance 'surface-parameters)))
+    
+    
+;;    	  (cffi:foreign-bitfield-value 'Contact-Enum
+    ;;(union (surface-mode this) (surface-mode that))))
+    params
+    
+    ))
+
 
 
 ;; (defmacro combine-surface-properties (surface val1 val2 property)

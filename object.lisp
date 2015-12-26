@@ -1,116 +1,97 @@
 (in-package #:cl-ode)
 
-(defparameter mode-options '(ode::Mu2	  
-		     ode::Axis-Dep 
-		     ode::FDir1	  
-		     ode::Bounce  
-		     ode::Soft-ERP 
-		     ode::Soft-CFM 
-		     ode::Motion1 
-		     ode::Motion2 
-		     ode::MotionN 
-		     ode::Slip1	  
-		     ode::Slip2	  
-		     ode::Rolling 
-		     ode::Approx0   
-		     ode::Approx1-1 
-		     ode::Approx1-2 
-		     ode::Approx1-N 
-		     ode::Approx1))
+(defparameter mode-options 
+  '(ode::Mu2	  
+    ode::Axis-Dep 
+    ode::FDir1	  
+    ode::Bounce  
+    ode::Soft-ERP 
+    ode::Soft-CFM 
+    ode::Motion1 
+    ode::Motion2 
+    ode::MotionN 
+    ode::Slip1	  
+    ode::Slip2	  
+    ode::Rolling 
+    ode::Approx0   
+    ode::Approx1-1 
+    ode::Approx1-2 
+    ode::Approx1-N 
+    ode::Approx1))
 
 
-(defclass physics-object (refcount)
-  ((body :initform nil
-	 :initarg :body
-	 :reader body)
-   (geometry :initform nil
-	     :initarg :geometry
-	     :reader geometry)
-   (world :initform *physics-world*
-	  :initarg :world
-	  :reader world)
-   (space :initform *physics-space*
-	  :initarg :space
-	  :reader pspace)
-   (surface-mode :initform '(:bounce :soft-CFM)
-		 :initarg :mode
-		 :accessor surface-mode
-		 :type :int)
-   (surface-mu :INITFORM 1d100 :INITARG :mu :ACCESSOR surface-mu)
-   (surface-mu2 :INITFORM 0 :INITARG :mu2 :ACCESSOR surface-mu2)
-   (surface-rho :INITFORM .1d0 :INITARG :rho :ACCESSOR surface-rho)
-   (surface-rho2 :INITFORM 0 :INITARG :rho2 :ACCESSOR surface-rho2)
-   (surface-rhon :INITFORM 0 :INITARG :rhon :ACCESSOR surface-rhon)
-   (surface-bounce :INITFORM 0 :INITARG :bounce :ACCESSOR surface-bounce)
-   (surface-bounce-vel :INITFORM 0 :INITARG :bounce-vel :ACCESSOR
-		       surface-bounce-vel)
-   (surface-soft-erp :INITFORM 0 :INITARG :soft-erp :ACCESSOR
-		     surface-soft-erp)
-   (surface-soft-cfm :INITFORM 0 :INITARG :soft-cfm :ACCESSOR
-		     surface-soft-cfm)
-   (surface-motion1 :INITFORM 0 :INITARG :motion1 :ACCESSOR
-		    surface-motion1)
-   (surface-motion2 :INITFORM 0 :INITARG :motion2 :ACCESSOR
-		    surface-motion2)
-   (surface-motionn :INITFORM 0 :INITARG :motionn :ACCESSOR
-		    surface-motionn)
-   (surface-slip1 :INITFORM 0 :INITARG :slip1 :ACCESSOR surface-slip1)
-   (surface-slip2 :INITFORM 0 :INITARG :slip2 :ACCESSOR surface-slip2)))
+(defparameter surface-parameters-macros
+  '(surface-parameters-Mu2	  
+    surface-parameters-Axis-Dep 
+    surface-parameters-FDir1	  
+    surface-parameters-Bounce  
+    surface-parameters-Soft-ERP 
+    surface-parameters-Soft-CFM 
+    surface-parameters-Motion1 
+    surface-parameters-Motion2 
+    surface-parameters-MotionN 
+    surface-parameters-Slip1	  
+    surface-parameters-Slip2	  
+    surface-parameters-Rolling 
+    surface-parameters-Approx0   
+    surface-parameters-Approx1-1 
+    surface-parameters-Approx1-2 
+    surface-parameters-Approx1-N 
+    surface-parameters-Approx1))
 
+;; (defmethod initialize-instance :around ((this physics-object) &key position rotation matrix offset-matrix offset-position offset-rotation)
 
-(defmethod initialize-instance :around ((this physics-object) &key position rotation matrix offset-matrix offset-position offset-rotation)
+;;   (call-next-method)
 
-  (call-next-method)
+;;   (when (body this)
+;;     (ref (body this)))
 
-  (when (body this)
-    (ref (body this)))
+;;   (unless (typep this 'physics-plane)
+;;     (if matrix
+;; 	(if (body this)
+;; 	    (set-transform (body this) matrix)
+;; 	    (set-transform this matrix))
+;; 	(progn
+;; 	  (when position
+;; 	    (if (body this)
+;; 		(body-set-position (pointer (body this))
+;; 				   (first (or position 0))
+;; 				   (second (or position 0))
+;; 				   (third (or position 0)))
+;; 		(geom-set-position (geometry this)
+;; 				   (first (or position 0))
+;; 				   (second (or position 0))
+;; 				   (third (or position 0)))))
+;; 	  (when rotation (error "setting rotation is not yet implemented!"))))
 
-  (unless (typep this 'physics-plane)
-    (if matrix
-	(if (body this)
-	    (set-transform (body this) matrix)
-	    (set-transform this matrix))
-	(progn
-	  (when position
-	    (if (body this)
-		(body-set-position (pointer (body this))
-				   (first (or position 0))
-				   (second (or position 0))
-				   (third (or position 0)))
-		(geom-set-position (geometry this)
-				   (first (or position 0))
-				   (second (or position 0))
-				   (third (or position 0)))))
-	  (when rotation (error "setting rotation is not yet implemented!"))))
-
-    (when (body this)
-      (cond (offset-matrix (set-offset-transform this offset-matrix))
-	    (offset-position (geom-set-offset-position (geometry this)
-						       (first offset-position)
-						       (second offset-position)
-						       (third offset-position)))
-	    (offset-rotation (error "setting rotation is not yet implemented!"))
-	    (t t))))
+;;     (when (body this)
+;;       (cond (offset-matrix (set-offset-transform this offset-matrix))
+;; 	    (offset-position (geom-set-offset-position (geometry this)
+;; 						       (first offset-position)
+;; 						       (second offset-position)
+;; 						       (third offset-position)))
+;; 	    (offset-rotation (error "setting rotation is not yet implemented!"))
+;; 	    (t t))))
 
 
 
 
 
-  (setf (gethash (pointer-address (geometry this)) *physics-geometry-hash*) this))
+;;   (setf (gethash (pointer-address (geometry this)) *physics-geometry-hash*) this))
 
 
-(defmethod unload ((this physics-object) &key)
-  (when (body this)
-    (unref (body this))
+;; (defmethod unload ((this physics-object) &key)
+;;   (when (body this)
+;;     (unref (body this))
 
-    (setf (slot-value this 'body) nil))
+;;     (setf (slot-value this 'body) nil))
 
-  (when (geometry this)
-    (when (gethash (pointer-address (geometry this)) *physics-geometry-hash*)
-      (remhash (pointer-address (geometry this)) *physics-geometry-hash*))
+;;   (when (geometry this)
+;;     (when (gethash (pointer-address (geometry this)) *physics-geometry-hash*)
+;;       (remhash (pointer-address (geometry this)) *physics-geometry-hash*))
 
-    (Geom-Destroy (geometry this))
-    (setf (slot-value this 'geometry) nil)))
+;;     (Geom-Destroy (geometry this))
+;;     (setf (slot-value this 'geometry) nil)))
 
 (defmethod get-transform ((geom physics-object))
   (let ((position (geom-get-position (geometry geom)))
@@ -166,14 +147,22 @@
 		       (elt matrix 11))))
 
 
-
 (defmethod set-position ((this physics-object) x y z)
   (with-slots ((body body)) this
     (if body 
 	(body-set-position (pointer body) x y z)
 	(geom-set-position (geometry this) x y z))))
 
-(defmethod combine-physics-objects (surface (this physics-object) (that physics-object))
+(defmethod combine-physics-objects ((this geometry) (that geometry))
+
+  (let ((params (make-instance 'surface-parameters)))
+    
+    (setf (surface-parameters-mode this)
+	  (cffi:foreign-bitfield-value 'ode::Contact-Enum
+				       (union (surface-mode this) (surface-mode that))))
+
+    
+    ))
 
   (setf (cffi:foreign-slot-value surface '(:struct ode:dSurfaceParameters) 'ode::mode)
 	(cffi:foreign-bitfield-value 'ode::Contact-Enum

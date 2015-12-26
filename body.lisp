@@ -20,6 +20,11 @@
 					(elt rotation 2) (elt rotation 6) (elt rotation 10) 0.0
 					(elt position 0) (elt position 1) (elt position 2)  1.0))))
 
+(defmethod body-set-transform ((this body) (m array))
+
+  (body-set-position this (elt m 12) (elt m 13) (elt m 14))
+  (body-set-rotation this m))
+
 
 (defmethod (setf move-handler) ((func null) (this body))
   (setf (slot-value this 'move-handler) nil)
@@ -29,10 +34,6 @@
   (with-slots ((handler move-handler)) this
     (unless handler (body-set-moved-callback this (callback moved-callback)))
     (setf handler func)))
-
-(defmethod body-set-transform ((this body) (m array))
-
-  (body-set-position this (elt m 12) (elt m 13) (elt m 14)))
 
 (defmethod body-moved-callback ((this body) &key)
   (funcall (slot-value this 'move-handler) this))

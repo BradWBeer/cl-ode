@@ -42,22 +42,23 @@
 
 
 (defbitfield Contact-Enum
-  (:Mu2		 #x001)
-  (:FDir1	 #x002)
-  (:Bounce	 #x004)
-  (:Soft-ERP	 #x008)
-  (:Soft-CFM	 #x010)
-  (:Motion1	 #x020)
-  (:Motion2	 #x040)
-  (:MotionN	 #x080)
-  (:Slip1	 #x100)
-  (:Slip2	 #x200)
-  (:Rolling      #x400)
-  (:Approx0	 #x0000)
-  (:Approx1-1	 #x1000)
-  (:Approx1-2	 #x2000)
-  (:Approx1-N    #x4000)
-  (:Approx1      #x7000))
+  (:Mu2		   #x001)
+  (:ContactAxisDep #x001)
+  (:FDir1	   #x002)
+  (:Bounce	   #x004)
+  (:Soft-ERP	   #x008)
+  (:Soft-CFM	   #x010)
+  (:Motion1	   #x020)
+  (:Motion2	   #x040)
+  (:MotionN	   #x080)
+  (:Slip1	   #x100)
+  (:Slip2	   #x200)
+  (:Rolling        #x400)
+  ;;(:Approx0	   #x0000)
+  (:Approx1-1	   #x1000)
+  (:Approx1-2	   #x2000)
+  (:Approx1-N      #x4000)
+  (:Approx1        #x7000))
 
   
 (defctype dVector3 (:array dReal 4))
@@ -173,26 +174,24 @@
 	   (make-instance ',name :pointer pointer)))
 
        (defmethod destroy ((this ,name))
-	 (foreign-free (slot-value this 'pointer)))
+	 (foreign-free (slot-value this 'pointer))
+	 (setf (slot-value this 'pointer) nil))
 
        ,@(loop for (var type) in members
-	    collect (let ((accessor (intern
-				    (string-upcase
-				     (concatenate 'string
-						  (princ-to-string name)
-						  "-"
-						  (princ-to-string var))))))
-		     `(struct-slot ,accessor '(:struct ,struct-name) ',var))))))
-
-
-;; ((defmethod ,accessor ((this ,name))
-;; 			  (foreign-slot-value (slot-value this 'pointer) ',struct-name ',var))
-
-
-;; 		       (DEFMETHOD (SETF ,accessor) (val (this ,name))
-;; 			 (setf (foreign-slot-value (slot-value cl-ode::this 'pointer)
-;; 						   'surface-params-struct ',var) val))))))))			
-
+	    append (let ((accessor (intern
+				     (string-upcase
+				      (concatenate 'string
+						   (princ-to-string name)
+						   "-"
+						   (princ-to-string var))))))
+		      `((defmethod ,accessor ((this ,name))
+			 (cffi:with-foreign-slots ((,var) (slot-value this 'ode::pointer) (:struct ,struct-name))
+			   ,var))
+			
+			(defmethod (setf ,accessor) (val (this ,name))
+			  (cffi:with-foreign-slots ((,var) (slot-value this 'ode::pointer) (:struct ,struct-name))
+			    
+			    (setf ,var val)))))))))
 
 (create-struct-class (mass dMass)
   (mass dReal)

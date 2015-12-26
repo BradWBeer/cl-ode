@@ -18,8 +18,7 @@
 	       (:file "bindings")
 	       (:file "utils")
 
-	       ;; (:file "body")
-	       ;; (:file "object")
+	       ;;(:file "object")
 	       ;; (:file "sphere")
 	       ;; (:file "cylinder")
 	       ;; (:file "capsule")

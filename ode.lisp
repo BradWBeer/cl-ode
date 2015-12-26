@@ -21,7 +21,7 @@
       (body-moved-callback body))))
 
 
-(defcfun-rename-function "dBodySetMovedCallback" :void 
+(defcfun-rename-function ("dBodySetMovedCallback") :void 
   (body dBodyID)
   (callback :pointer))
 

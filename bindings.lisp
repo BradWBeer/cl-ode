@@ -41,39 +41,40 @@
            package))))))
 
 
-(defmacro defcfun-rename-function (name &rest rest)
-  (let ((lisp-name (swig-lispify-noprefix name 'function)))
+(defmacro defcfun-rename-function ((name &optional new-name) &rest rest)
+  (let ((lisp-name (or new-name
+		       (swig-lispify-noprefix name 'function))))
     `(progn
        (defcfun (,name ,lisp-name)
 	     ,@rest)
        (cl:export (swig-lispify-noprefix ,name 'function)))))
 
 
-(defcfun-rename-function "dGetConfiguration" :string)
+(defcfun-rename-function ("dGetConfiguration") :string)
 
-(defcfun-rename-function "dInitODE" :void)
-(defcfun-rename-function "dInitODE2" :void
+(defcfun-rename-function ("dInitODE") :void)
+(defcfun-rename-function ("dInitODE2") :void
   (init-flags :unsigned-int))
 
-(defcfun-rename-function "dCloseODE" :void)
+(defcfun-rename-function ("dCloseODE") :void)
 
 
-(defcfun-rename-function "dBodyCreate" dBodyID
+(defcfun-rename-function ("dBodyCreate") dBodyID
   (world dWorldID))
 
-(defcfun-rename-function "dBodyGetWorld" dWorldID
+(defcfun-rename-function ("dBodyGetWorld") dWorldID
   (body dBodyID))
 
-(defcfun-rename-function "dBodyDestroy" :void
+(defcfun-rename-function ("dBodyDestroy") :void
   (world dBodyID))
 
-(defcfun-rename-function "dBodyGetPosition" dVector3
+(defcfun-rename-function ("dBodyGetPosition") dVector3
   (body dBodyID))
 
-(defcfun-rename-function "dBodyGetRotation" dVector3
+(defcfun-rename-function ("dBodyGetRotation") dVector3
   (body dBodyID))
 
-(defcfun-rename-function "dBodyGetMass" :void
+(defcfun-rename-function ("dBodyGetMass") :void
   (body dBodyID)
   (mass dMass))
 
@@ -83,107 +84,107 @@
 ;;     (dbodygetmass this mass)
 ;;     mass))
    
-(defcfun-rename-function "dBodySetMass" :void
+(defcfun-rename-function ("dBodySetMass") :void
   (body dBodyID)
   (mass dMass))
 
-(defcfun-rename-function "dBodySetPosition" :void
+(defcfun-rename-function ("dBodySetPosition") :void
   (body dBodyID)
   (x dReal)
   (y dReal)
   (z dReal))
 
-(defcfun-rename-function "dBodySetLinearVel" :void
+(defcfun-rename-function ("dBodySetLinearVel") :void
   (body dBodyID)
   (x dReal)
   (y dReal)
   (z dReal))
 
 
-(defcfun-rename-function "dBodySetAngularVel" :void
+(defcfun-rename-function ("dBodySetAngularVel") :void
   (body dBodyID)
   (x dReal)
   (y dReal)
   (z dReal))
 
-(defcfun-rename-function "dBodyGetLinearVel" dVector3
+(defcfun-rename-function ("dBodyGetLinearVel") dVector3
   (body dBodyID))
 
-(defcfun-rename-function "dBodyGetAngularVel" dVector3
+(defcfun-rename-function ("dBodyGetAngularVel") dVector3
   (body dBodyID))
 
-(defcfun-rename-function "dBodySetMaxAngularSpeed" :void
+(defcfun-rename-function ("dBodySetMaxAngularSpeed") :void
   (body dBodyID)
   (max-speed dReal))
 
-(defcfun-rename-function "dBodySetRotation" :void
+(defcfun-rename-function ("dBodySetRotation") :void
   (body dBodyID)
   (R dMatrix3))
 
-(defcfun-rename-function "dBodyEnable" :void
+(defcfun-rename-function ("dBodyEnable") :void
   (body dBodyID))
 
-(defcfun-rename-function "dBodyDisable" :void
+(defcfun-rename-function ("dBodyDisable") :void
   (body dBodyID))
 
 
-(defcfun-rename-function "dBodyIsEnabled" :int
+(defcfun-rename-function ("dBodyIsEnabled") :int
   (body dBodyID))
 
-(defcfun-rename-function "dBodyGetFirstGeom" dGeomID
+(defcfun-rename-function ("dBodyGetFirstGeom") dGeomID
   (body dBodyID))
 
-(defcfun-rename-function "dBodyGetNextGeom" dGeomID
+(defcfun-rename-function ("dBodyGetNextGeom") dGeomID
   (geom dGeomID))
 
 
 
-(defcfun-rename-function "dGeomSetCategoryBits" :void
+(defcfun-rename-function ("dGeomSetCategoryBits") :void
   (geom dGeomID)
   (bits :unsigned-long))
 
-(defcfun-rename-function "dGeomSetCollideBits" :void
+(defcfun-rename-function ("dGeomSetCollideBits") :void
   (geom dGeomID)
   (bits :unsigned-long))
 
-(defcfun-rename-function "dGeomGetCollideBits" :unsigned-long
+(defcfun-rename-function ("dGeomGetCollideBits") :unsigned-long
   (geom dGeomID))
 
-(defcfun-rename-function "dGeomGetCategoryBits" :unsigned-long
+(defcfun-rename-function ("dGeomGetCategoryBits") :unsigned-long
   (geom dGeomID))
 
-(defcfun-rename-function "dBodySetAutoDisableFlag" :void
+(defcfun-rename-function ("dBodySetAutoDisableFlag") :void
   (body dBodyID)
   (auto-disable :int))
 
-(defcfun-rename-function "dBodyGetAutoDisableFlag" :int
+(defcfun-rename-function ("dBodyGetAutoDisableFlag") :int
   (body dBodyID))
 
-(defcfun-rename-function "dBodyAddForce" :void 
+(defcfun-rename-function ("dBodyAddForce") :void 
   (body dBodyID)
   (fx dReal)
   (fy dReal)
   (fz dReal))
 
-(defcfun-rename-function "dBodyAddTorque" :void
+(defcfun-rename-function ("dBodyAddTorque") :void
   (body dBodyID)
   (fx dReal)
   (fy dReal)
   (fz dReal))
 
-(defcfun-rename-function "dBodyAddRelForce" :void 
+(defcfun-rename-function ("dBodyAddRelForce") :void 
   (body dBodyID)
   (fx dReal)
   (fy dReal)
   (fz dReal))
 
-(defcfun-rename-function "dBodyAddRelTorque" :void
+(defcfun-rename-function ("dBodyAddRelTorque") :void
   (body dBodyID)
   (fx dReal)
   (fy dReal)
   (fz dReal))
 
-(defcfun-rename-function "dBodyAddForceAtPos" :void
+(defcfun-rename-function ("dBodyAddForceAtPos") :void
   (body dBodyID)
   (fx dReal)
   (fy dReal) 
@@ -192,7 +193,7 @@
   (py dReal)
   (pz dReal))
 
-(defcfun-rename-function "dBodyAddForceAtRelPos" :void
+(defcfun-rename-function ("dBodyAddForceAtRelPos") :void
   (body dBodyID)
   (fx dReal)
   (fy dReal) 
@@ -201,7 +202,7 @@
   (py dReal)
   (pz dReal))
 
-(defcfun-rename-function "dBodyAddRelForceAtPos" :void
+(defcfun-rename-function ("dBodyAddRelForceAtPos") :void
   (body dBodyID)
   (fx dReal)
   (fy dReal) 
@@ -210,7 +211,7 @@
   (py dReal)
   (pz dReal))
 
-(defcfun-rename-function "dBodyAddRelForceAtRelPos" :void
+(defcfun-rename-function ("dBodyAddRelForceAtRelPos") :void
   (body dBodyID)
   (fx dReal)
   (fy dReal) 
@@ -219,188 +220,188 @@
   (py dReal)
   (pz dReal))
 
-(defcfun-rename-function "dBodyGetForce" dVector3 
+(defcfun-rename-function ("dBodyGetForce") dVector3 
   (body dBodyID))
 
-(defcfun-rename-function "dBodyGetTorque" dVector3 
+(defcfun-rename-function ("dBodyGetTorque") dVector3 
   (body dBodyID))
 
-(defcfun-rename-function "dBodySetForce" :void 
+(defcfun-rename-function ("dBodySetForce") :void 
   (body dBodyID)
   (x dReal)
   (y dReal) 
   (z dReal))
 
-(defcfun-rename-function "dBodySetTorque" :void 
+(defcfun-rename-function ("dBodySetTorque") :void 
   (body dBodyID)
   (x dReal)
   (y dReal) 
   (z dReal))
 
-(defcfun-rename-function "dBodySetDynamic" :void 
+(defcfun-rename-function ("dBodySetDynamic") :void 
   (body dBodyID))
 
-(defcfun-rename-function "dBodySetKinematic" :void 
+(defcfun-rename-function ("dBodySetKinematic") :void 
   (body dBodyID))
 
-(defcfun-rename-function "dBodyIsKinematic" :int 
+(defcfun-rename-function ("dBodyIsKinematic") :int 
   (body dBodyID))
 
-(defcfun-rename-function "dBodyVectorToWorld" :void
+(defcfun-rename-function ("dBodyVectorToWorld") :void
   (body dBodyID)
   (px dReal)
   (py dReal)
   (pz dReal)
   (result dVector3))
 
-(defcfun-rename-function "dBodyVectorFromWorld" :void
+(defcfun-rename-function ("dBodyVectorFromWorld") :void
   (body dBodyID)
   (px dReal)
   (py dReal)
   (pz dReal)
   (result dVector3))
 
-(defcfun-rename-function "dBodySetAutoDisableLinearThreshold" :void 
+(defcfun-rename-function ("dBodySetAutoDisableLinearThreshold") :void 
   (body dBodyID)
   (linear-threshold dReal))
 
-(defcfun-rename-function "dBodyGetAutoDisableLinearThreshold" dReal
+(defcfun-rename-function ("dBodyGetAutoDisableLinearThreshold") dReal
   (body dBodyID))
 
-(defcfun-rename-function "dBodySetAutoDisableAngularThreshold" :void  
+(defcfun-rename-function ("dBodySetAutoDisableAngularThreshold") :void  
   (body dBodyID) 
   (angular-threshold dReal))
 
-(defcfun-rename-function "dBodyGetAutoDisableAngularThreshold" dReal
+(defcfun-rename-function ("dBodyGetAutoDisableAngularThreshold") dReal
   (body dBodyID))
 
-(defcfun-rename-function "dBodySetAutoDisableSteps" :void
+(defcfun-rename-function ("dBodySetAutoDisableSteps") :void
   (body dBodyID)
   (steps :int))
 
-(defcfun-rename-function "dBodyGetAutoDisableSteps" :int
+(defcfun-rename-function ("dBodyGetAutoDisableSteps") :int
   (body dBodyID))
 
-(defcfun-rename-function "dBodySetAutoDisableTime" :void
+(defcfun-rename-function ("dBodySetAutoDisableTime") :void
   (body dBodyID)
   (time dReal))
 
-(defcfun-rename-function "dBodyGetAutoDisableTime" dReal
+(defcfun-rename-function ("dBodyGetAutoDisableTime") dReal
   (body dBodyID))
 
-(defcfun-rename-function "dBodySetAutoDisableAverageSamplesCount" :void 
+(defcfun-rename-function ("dBodySetAutoDisableAverageSamplesCount") :void 
   (body dBodyID)
   (average-samples-count :unsigned-int))
 
-(defcfun-rename-function "dBodyGetAutoDisableAverageSamplesCount" :int 
+(defcfun-rename-function ("dBodyGetAutoDisableAverageSamplesCount") :int 
   (body dBodyID))
 
-(defcfun-rename-function "dBodySetAutoDisableDefaults" :void 
+(defcfun-rename-function ("dBodySetAutoDisableDefaults") :void 
   (body dBodyID))
 
 (defcfun ("dBodySetMovedCallback" Body-Set-Moved-Callback) :void 
   (body dBodyID)
   (callback :pointer))
 
-(defcfun-rename-function "dBodyGetLinearDamping" dReal
+(defcfun-rename-function ("dBodyGetLinearDamping") dReal
   (body dBodyID))
 
-(defcfun-rename-function "dBodyGetAngularDamping" dReal
+(defcfun-rename-function ("dBodyGetAngularDamping") dReal
   (body dBodyID))
 
-(defcfun-rename-function "dBodySetLinearDamping" :void
+(defcfun-rename-function ("dBodySetLinearDamping") :void
   (body dBodyID)
   (scale dReal)) 
 
-(defcfun-rename-function "dBodySetAngularDamping" :void
+(defcfun-rename-function ("dBodySetAngularDamping") :void
   (body dBodyID)
   (scale dReal))
 
-(defcfun-rename-function "dGeomSetPosition" :void
+(defcfun-rename-function ("dGeomSetPosition") :void
   (geom dGeomID)
   (x dReal)
   (y dReal)
   (z dReal))
 
-(defcfun-rename-function "dGeomSetRotation" :void
+(defcfun-rename-function ("dGeomSetRotation") :void
   (geom dGeomID)
   (r dMatrix3))
 
-(defcfun-rename-function "dGeomSetQuaternion" :void
+(defcfun-rename-function ("dGeomSetQuaternion") :void
   (geom dGeomID)
   (q dQuaternion))
 
-(defcfun-rename-function "dGeomGetPosition" dVector3
+(defcfun-rename-function ("dGeomGetPosition") dVector3
   (geom dGeomID))
 
-(defcfun-rename-function "dGeomGetRotation" dMatrix3
+(defcfun-rename-function ("dGeomGetRotation") dMatrix3
   (geom dGeomID))
 
-(defcfun-rename-function "dGeomGetQuaternion" :void
+(defcfun-rename-function ("dGeomGetQuaternion") :void
   (geom dGeomID)
   (result dQuaternion))
 
-(defcfun-rename-function "dGeomSetOffsetPosition" :void
+(defcfun-rename-function ("dGeomSetOffsetPosition") :void
   (geom dGeomID)
   (x dReal)
   (y dReal)
   (z dReal))
 
-(defcfun-rename-function "dGeomSetOffsetRotation" :void
+(defcfun-rename-function ("dGeomSetOffsetRotation") :void
   (geom dGeomID)
   (r dMatrix3))
 
-(defcfun-rename-function "dGeomSetOffsetQuaternion" :void 
+(defcfun-rename-function ("dGeomSetOffsetQuaternion") :void 
   (geom dGeomID)
   (q dQuaternion))
 
-(defcfun-rename-function "dGeomClearOffset" :void
+(defcfun-rename-function ("dGeomClearOffset") :void
   (geom dGeomID))
 
-(defcfun-rename-function "dCreateBox" dBoxID
+(defcfun-rename-function ("dCreateBox" Create-Box) dBoxID
   (space dSpaceID)
   (lx dReal)
   (ly dReal)
   (lz dReal))
 
-(defcfun-rename-function "dCreatePlane" dPlaneID
+(defcfun-rename-function ("dCreatePlane" Create-Plane) dPlaneID
   (space dSpaceID)
   (a dReal)
   (b dReal)
   (c dReal)
   (d dReal))
 
-(defcfun-rename-function "dGeomDestroy" :void
+(defcfun-rename-function ("dGeomDestroy") :void
   (obj dGeomID))
 
-(defcfun-rename-function "dGeomSetBody" :void
+(defcfun-rename-function ("dGeomSetBody") :void
   (geom dGeomID)
   (body dBodyID))
 
-(defcfun-rename-function "dHashSpaceCreate" dHashSpaceID
+(defcfun-rename-function ("dHashSpaceCreate") dHashSpaceID
   (space dSpaceID))
 
-(defcfun-rename-function "dQuadTreeSpaceCreate" dQuadSpaceID
+(defcfun-rename-function ("dQuadTreeSpaceCreate") dQuadSpaceID
   (space dSpaceID)
   (center dVector3)
   (extents dVector3)
   (depth :int))
 
-(defcfun-rename-function "dJointGroupEmpty" :void
+(defcfun-rename-function ("dJointGroupEmpty") :void
   (jointGroup dJointGroupID))
 
-(defcfun-rename-function "dJointAttach" :void
+(defcfun-rename-function ("dJointAttach") :void
   (joint dJointID)
   (body1 dBodyID)
   (body2 dBodyID))
 
-(defcfun-rename-function "dJointGroupCreate" dJointGroupID
+(defcfun-rename-function ("dJointGroupCreate") dJointGroupID
   (max-size :int))
 
-(defcfun-rename-function "dJointGroupDestroy" :void
+(defcfun-rename-function ("dJointGroupDestroy") :void
   (joint-group dJointGroupID))
 
-(defcfun-rename-function "dMassSetBox" :void
+(defcfun-rename-function ("dMassSetBox") :void
   (mass dMass)
   (m dReal)
   (lx dReal)
@@ -408,7 +409,7 @@
   (lz dReal))
 
 
-(defcfun-rename-function "dMassSetBoxTotal" :void
+(defcfun-rename-function ("dMassSetBoxTotal") :void
   (mass dMass)
   (m dReal)
   (lx dReal)
@@ -416,27 +417,27 @@
   (lz dReal))
 
 
-(defcfun-rename-function "dMassSetZero" :void
+(defcfun-rename-function ("dMassSetZero") :void
   (mass dMass))
 
-(defcfun-rename-function "dRFromAxisAndAngle" :void
+(defcfun-rename-function ("dRFromAxisAndAngle") :void
   (R dMatrix3)
   (ax dReal)
   (ay dReal)
   (az dReal)
   (angle dReal))
 
-(defcfun-rename-function "dSpaceCollide" :void
+(defcfun-rename-function ("dSpaceCollide") :void
   (space dSpaceID)
   (data :pointer)
   (callback :pointer))
 
-(defcfun-rename-function "dWorldCreate" dWorldID) 
+(defcfun-rename-function ("dWorldCreate") dWorldID) 
 
-(defcfun-rename-function "dWorldDestroy" :void
+(defcfun-rename-function ("dWorldDestroy") :void
   (world dWorldID))
 
-(defcfun-rename-function "dWorldSetGravity" :void
+(defcfun-rename-function ("dWorldSetGravity") :void
   (world dWorldID)
   (x dReal)
   (y dReal)
@@ -446,28 +447,28 @@
   (world dWorldID)
   (gravity :pointer))
 
-(defcfun-rename-function "dWorldStep" :void
+(defcfun-rename-function ("dWorldStep") :void
   (world dWorldID)
   (step_size dReal))
 
-(defcfun-rename-function "dCreateSphere" dSphereID
+(defcfun-rename-function ("dCreateSphere" Sphere-Create) dSphereID
   (space dSpaceID)
   (radius dReal))
 
-(defcfun-rename-function "dGeomSphereSetRadius" :void
+(defcfun-rename-function ("dGeomSphereSetRadius") :void
   (sphere dSphereID)
   (radius dReal))
 
-(defcfun-rename-function "dGeomSphereGetRadius" dReal
+(defcfun-rename-function ("dGeomSphereGetRadius") dReal
   (sphere dSphereID))
 
-(defcfun-rename-function "dGeomSpherePointDepth" dReal
+(defcfun-rename-function ("dGeomSpherePointDepth") dReal
   (sphere dSphereID)
   (x dReal)
   (y dReal)
   (z dReal))
   
-(defcfun-rename-function "dMassSetSphere" :void
+(defcfun-rename-function ("dMassSetSphere") :void
   (m dMass)
   (density dReal)
   (radius dReal))
@@ -479,44 +480,44 @@
 ;;     (body-set-mass this mass)))
 
 
-(defcfun-rename-function "dMassSetSphereTotal" :void
+(defcfun-rename-function ("dMassSetSphereTotal") :void
   (m dMass)
   (total-mass dReal)
   (radius dReal))
 
 
-(defcfun-rename-function "dCreateCylinder" dCylinderID
+(defcfun-rename-function ("dCreateCylinder" Cylinder-Create) dCylinderID
   (space dSpaceID)
   (radius dReal)
   (length dReal))
 
-(defcfun-rename-function "dMassSetCylinder" :void
+(defcfun-rename-function ("dMassSetCylinder") :void
   (m dMass)
   (density dReal)
   (direction :int)
   (radius dReal)
   (length dReal))
 
-(defcfun-rename-function "dMassSetCylinderTotal" :void
+(defcfun-rename-function ("dMassSetCylinderTotal") :void
   (m dMass)
   (density dReal)
   (direction :int)
   (radius dReal)
   (length dReal))
 
-(defcfun-rename-function "dCreateCapsule" dCapsuleID
+(defcfun-rename-function ("dCreateCapsule" Capsule-Create) dCapsuleID
   (space dSpaceID)
   (radius dReal)
   (length dReal))
 
-(defcfun-rename-function "dMassSetCapsule" :void
+(defcfun-rename-function ("dMassSetCapsule") :void
   (m dMass)
   (density dReal)
   (direction :int)
   (radius dReal)
   (length dReal))
 
-(defcfun-rename-function "dMassSetCapsuleTotal" :void
+(defcfun-rename-function ("dMassSetCapsuleTotal") :void
   (m dMass)
   (density dReal)
   (direction :int)
@@ -524,18 +525,18 @@
   (length dReal))
 
 
-(defcfun-rename-function "dCreateRay" dRayID
+(defcfun-rename-function ("dCreateRay" Ray-Create) dRayID
   (space dSpaceID)
   (length dReal))
 
-(defcfun-rename-function "dGeomRaySetLength" :void 
+(defcfun-rename-function ("dGeomRaySetLength") :void 
   (ray dRayID)
   (length dReal))
 
-(defcfun-rename-function "dGeomRayGetLength" dReal
+(defcfun-rename-function ("dGeomRayGetLength") dReal
   (ray dRayID))
 
-(defcfun-rename-function "dGeomRaySet" :void 
+(defcfun-rename-function ("dGeomRaySet") :void 
   (ray dRayID)
   (px dReal)
   (py dReal)
@@ -544,93 +545,93 @@
   (dy dReal) 
   (dz dReal))
 
-(defcfun-rename-function "dGeomRayGet" :void
+(defcfun-rename-function ("dGeomRayGet") :void
   (ray dRayID)
   (start :pointer)
   (dir :pointer))
 
 
-(defcfun-rename-function "dGeomRaySetParams" :void 
+(defcfun-rename-function ("dGeomRaySetParams") :void 
   (ray dRayID)
   (first-contact :int) 
   (backface-cull :int))
 
-;; (defcfun-rename-function "dGeomRayGetParams" :void 
+;; (defcfun-rename-function ("dGeomRayGetParams") :void 
 ;;   (ray dGeomID)
 ;;   *FirstContact, int *BackfaceCull );
 
 
-(defcfun-rename-function "dGeomRaySetClosestHit" :void
+(defcfun-rename-function ("dGeomRaySetClosestHit") :void
   (ray dRayID)
   (ClosestHit :int))
 
-(defcfun-rename-function "dGeomRayGetClosestHit" :int
+(defcfun-rename-function ("dGeomRayGetClosestHit") :int
   (ray dRayID))
 
-(defcfun-rename-function "dSpaceDestroy" :void
+(defcfun-rename-function ("dSpaceDestroy") :void
   (space dSpaceID))
 
-(defcfun-rename-function "dWorldSetCFM" :void
+(defcfun-rename-function ("dWorldSetCFM") :void
   (world dWorldID)
   (cfm dReal))
 
-(defcfun-rename-function "dWorldSetERP" :void
+(defcfun-rename-function ("dWorldSetERP") :void
   (world dWorldID)
   (erp dReal))
 
 
-(defcfun-rename-function "dWorldQuickStep" :void
+(defcfun-rename-function ("dWorldQuickStep") :void
   (w dWorldID)
   (stepsize dReal))
 
-(defcfun-rename-function "dGeomGetBody" dBodyID
+(defcfun-rename-function ("dGeomGetBody") dBodyID
   (geom dGeomID))
 
-(defcfun-rename-function "dCollide" :int
+(defcfun-rename-function ("dCollide") :int
   (o1 dGeomID)
   (o2 dGeomID)
   (flags :int)
   (contact (:pointer dContactGeom))
   (skip :int))
 
-(defcfun-rename-function "dJointCreateContact" dContactJointID
+(defcfun-rename-function ("dJointCreateContact") dContactJointID
   (world dWorldID)
   (joint-group dJointGroupID)
   (contact (:pointer dContact)))
 
-(defcfun-rename-function "dJointGetType" :int
+(defcfun-rename-function ("dJointGetType") :int
   (id dJointID))
 
-(defcfun-rename-function "dWorldSetLinearDamping" :void
+(defcfun-rename-function ("dWorldSetLinearDamping") :void
   (world dWorldID)
   (scale dReal))
 
-(defcfun-rename-function "dWorldSetAngularDamping" :void
+(defcfun-rename-function ("dWorldSetAngularDamping") :void
   (world dWorldID)
   (scale dReal))
 
-(defcfun-rename-function "dWorldSetDamping" :void
+(defcfun-rename-function ("dWorldSetDamping") :void
   (world dWorldID)
   (linear-scale dReal)
   (angular-scale dReal))
 
-(defcfun-rename-function "dWorldGetLinearDampingThreshold" dReal
+(defcfun-rename-function ("dWorldGetLinearDampingThreshold") dReal
   (world dWorldID))
 
-(defcfun-rename-function "dWorldGetAngularDampingThreshold" dReal
+(defcfun-rename-function ("dWorldGetAngularDampingThreshold") dReal
   (world dWorldID))
 
-(defcfun-rename-function "dWorldSetLinearDampingThreshold" :void
+(defcfun-rename-function ("dWorldSetLinearDampingThreshold") :void
   (world dWorldID)
   (threshold dReal))
 
-(defcfun-rename-function "dWorldSetAngularDampingThreshold" :void
+(defcfun-rename-function ("dWorldSetAngularDampingThreshold") :void
   (world dWorldID) 
   (threshold dReal))
 
-(defcfun-rename-function "dWorldSetAutoDisableFlag" :void
+(defcfun-rename-function ("dWorldSetAutoDisableFlag") :void
   (world dWorldID)
   (auto-disable :int))
 
-(defcfun-rename-function "dWorldGetAutoDisableFlag" :int
+(defcfun-rename-function ("dWorldGetAutoDisableFlag") :int
   (world dWorldID))
