@@ -10,13 +10,15 @@
   ;(ode::physics-near-handler data o1 o2))
   (unless (pointer-eq o1 o2)
     
-    (print (gethash (cffi:pointer-address o1) *object-hash*))
-    (print (gethash (cffi:pointer-address o2) *object-hash*))))
+    ;; (print (gethash (cffi:pointer-address o1) *object-hash*))
+    ;; (print (gethash (cffi:pointer-address o2) *object-hash*)))
+  ))
 
 
 (cffi:defcallback moved-callback :void ((body :pointer))
-  
-  (body-moved-callback (print (gethash (cffi:pointer-address body) *object-hash*))))
+  (let ((body (gethash (cffi:pointer-address body) *object-hash*)))
+    (when (and body (move-handler body))
+      (body-moved-callback body))))
 
 
 (defcfun-rename-function "dBodySetMovedCallback" :void 

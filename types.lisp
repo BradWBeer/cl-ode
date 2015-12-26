@@ -105,7 +105,6 @@
 	       (setf (gethash (cffi:pointer-address pointer) *object-hash*) (make-instance ',name :pointer pointer)))))
 
      (defmethod destroy ((this ,name))
-       (declaim (ignore param))
        (remhash (cffi:pointer-address (slot-value this 'pointer)) *object-hash*)
        (,(or
 	  destructor
@@ -129,4 +128,107 @@
 	 (slot-value this 'pointer)))))
 
 
+
+(create-pointer-type geometry dGeomID :destructor Geom-Destroy :superclass proto-geometry)
+
+
+(create-pointer-subclass sphere dSphereID geometry dGeomID)
+(create-pointer-subclass box dBoxID geometry dGeomID)
+(create-pointer-subclass plane dPlaneID geometry dGeomID)
+(create-pointer-subclass cylinder dCylinderID geometry dGeomID)
+(create-pointer-subclass capsule dCapsuleID geometry dGeomID)
+(create-pointer-subclass ray dRayID geometry dGeomID)
+
+
+(defmacro struct-slot (name type slot)
+  `(defmacro ,name (this) 
+       `(foreign-slot-value (slot-value ,this 'pointer)
+		      ',,type ',,slot)))
+
+(defmacro create-struct-class ((name id) &body members)
+  (let ((type-name (intern (string-upcase (concatenate 'string (princ-to-string name) "-TYPE"))))
+	(struct-name (intern (string-upcase (concatenate 'string (princ-to-string name) "-STRUCT")))))
+    `(progn
+       
+       (defcstruct ,struct-name
+	,@members)
+       
+       (define-foreign-type ,type-name () ()
+		     (:actual-type :pointer)
+		     (:simple-parser ,id))
+
+       (defclass ,name ()
+	 ((pointer :initform (foreign-alloc '(:struct ,struct-name))
+		   :initarg :pointer)))
+
+       
+       (defmethod initialize-instance ((this ,name) &key)
+	 (setf (slot-value this 'pointer) (foreign-alloc '(:struct ,struct-name))))
+       
+       (defmethod translate-to-foreign ((this ,name) (type ,type-name))
+	 (slot-value this 'pointer))
+       
+       (defmethod translate-from-foreign (pointer (type ,type-name))
+	 (unless (null-pointer-p pointer)
+	   (make-instance ',name :pointer pointer)))
+
+       (defmethod destroy ((this ,name))
+	 (foreign-free (slot-value this 'pointer)))
+
+       ,@(loop for (var type) in members
+	    collect (let ((accessor (intern
+				    (string-upcase
+				     (concatenate 'string
+						  (princ-to-string name)
+						  "-"
+						  (princ-to-string var))))))
+		     `(struct-slot ,accessor '(:struct ,struct-name) ',var))))))
+
+
+;; ((defmethod ,accessor ((this ,name))
+;; 			  (foreign-slot-value (slot-value this 'pointer) ',struct-name ',var))
+
+
+;; 		       (DEFMETHOD (SETF ,accessor) (val (this ,name))
+;; 			 (setf (foreign-slot-value (slot-value cl-ode::this 'pointer)
+;; 						   'surface-params-struct ',var) val))))))))			
+
+
+(create-struct-class (mass dMass)
+  (mass dReal)
+  (center dVector3)
+  (inertia dMatrix3))
+
+
+(create-struct-class (surface-parameters dSurfaceParameters)
+  (mode Contact-Enum)
+  (mu dReal)
+  (mu2 dReal)
+  (rho dReal)
+  (rho2 dReal)
+  (rhoN dReal)
+  (bounce dReal)
+  (bounce-vel dReal)
+  (soft-erp dReal)
+  (soft-cfm dReal)
+  (motion1 dReal)
+  (motion2 dReal)
+  (motionN dReal)
+  (slip1 dReal)
+  (slip2 dReal))
+
+(create-struct-class (contact-geometry dContactGeom)
+  (pos dVector3)
+  (normal dVector3)
+  (depth dReal)
+  (g1 dGeomID)
+  (g2 dGeomID)
+  (side1 :int)
+  (side2 :int))
+
+
+(create-struct-class (contact dContact)
+  (surface dSurfaceParameters)
+  (geom dContactGeom)
+  (fdir1 dVector3))
 

@@ -1,9 +1,14 @@
 (in-package #:cl-ode)
 
-(create-pointer-type body dBodyID)
+(defclass proto-body () 
+  ((move-handler :initform nil
+		 :initarg :move-handler
+		 :reader move-handler)))
 
-(defmethod initialize-instance :after ((this body) &key)
-  (body-set-moved-callback this (callback moved-callback)))
+(create-pointer-type body dBodyID :superclass proto-body)
+
+;; (defmethod initialize-instance :after ((this body) &key)
+;;   (body-set-moved-callback this (callback moved-callback)))
 
 (defmethod body-get-transform ((this body))
   (let ((position (body-get-position this))
@@ -16,13 +21,21 @@
 					(elt position 0) (elt position 1) (elt position 2)  1.0))))
 
 
+(defmethod (setf move-handler) ((func null) (this body))
+  (setf (slot-value this 'move-handler) nil)
+  (body-set-moved-callback this nil))
+
+(defmethod (setf move-handler) ((func function) (this body))
+  (with-slots ((handler move-handler)) this
+    (unless handler (body-set-moved-callback this (callback moved-callback)))
+    (setf handler func)))
+
 (defmethod body-set-transform ((this body) (m array))
 
   (body-set-position this (elt m 12) (elt m 13) (elt m 14)))
 
 (defmethod body-moved-callback ((this body) &key)
-
-  (format t "Body-Moved-Callback ~A: ~A~%" this (body-get-position this)))
+  (funcall (slot-value this 'move-handler) this))
 
 (defmethod body-get-geoms ((this body) &key)
 

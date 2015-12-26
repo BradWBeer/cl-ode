@@ -590,13 +590,13 @@
   (o1 dGeomID)
   (o2 dGeomID)
   (flags :int)
-  (contact (:pointer (:struct dContactGeom)))
+  (contact (:pointer dContactGeom))
   (skip :int))
 
 (defcfun-rename-function "dJointCreateContact" dContactJointID
   (world dWorldID)
   (joint-group dJointGroupID)
-  (contact (:pointer (:struct dContact))))
+  (contact (:pointer dContact)))
 
 (defcfun-rename-function "dJointGetType" :int
   (id dJointID))

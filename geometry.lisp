@@ -38,40 +38,6 @@
 (create-pointer-subclass ray dRayID geometry dGeomID)
 
 
-(defcstruct dSurfaceParameters 
-  (mode Contact-Enum)
-  (mu dReal)
-  (mu2 dReal)
-  (rho dReal)
-  (rho2 dReal)
-  (rhoN dReal)
-  (bounce dReal)
-  (bounce-vel dReal)
-  (soft-erp dReal)
-  (soft-cfm dReal)
-  (motion1 dReal)
-  (motion2 dReal)
-  (motionN dReal)
-  (slip1 dReal)
-  (slip2 dReal))
-
-
-(defcstruct dContactGeom 
-  (pos dVector3)
-  (normal dVector3)
-  (depth dReal)
-  (g1 dGeomID)
-  (g2 dGeomID)
-  (side1 :int)
-  (side2 :int))
-
-
-(defcstruct dContact 
-  (surface (:struct dSurfaceParameters))
-  (geom (:struct dContactGeom))
-  (fdir1 dVector3))
-
-
 (defmethod geom-get-transform ((this geometry))
   (let ((position (geom-get-position this))
 	(rotation (geom-get-rotation this)))
@@ -88,14 +54,17 @@
   (geom-set-position this (elt m 12) (elt m 13) (elt m 14)))
 
 
-(defmacro combine-surface-properties (surface val1 val2 property)
-  (let ((v1 (gensym))
-	(v2 (gensym)))
+;; (defmacro combine-surface-properties (surface val1 val2 property)
+;;   (let ((v1 (gensym))
+;; 	(v2 (gensym)))
     
-    `(setf (foreign-slot-value ,surface '(:struct ode::dSurfaceParameters) ,property)
-	   (let ((,v1 ,val1)
-		 (,v2 ,val2))
-	     (cond ((and ,v1 ,v2) (/ (+ ,v1 ,v2) 2))
-		   ((and (null ,v1) ,v2) ,v2)
-		   ((and (null ,v2) ,v1) ,v1)
-		   (t 0))))))
+;;     `(setf (foreign-slot-value ,surface '(:struct ode::dSurfaceParameters) ,property)
+;; 	   (let ((,v1 ,val1)
+;; 		 (,v2 ,val2))
+;; 	     (cond ((and ,v1 ,v2) (/ (+ ,v1 ,v2) 2))
+;; 		   ((and (null ,v1) ,v2) ,v2)
+;; 		   ((and (null ,v2) ,v1) ,v1)
+;; 		   (t 0))))))
+
+
+
