@@ -77,7 +77,6 @@
 	     (format stream "ode function returned error ~A"
 		     (error-string c)))))
 
-
 (defmacro create-pointer-type (name id &key destructor superclass)
   (let ((type-name (intern (string-upcase (concatenate 'string (princ-to-string name) "-TYPE")))))
   `(progn 
@@ -160,11 +159,13 @@
 
        (defclass ,name ()
 	 ((pointer :initform (foreign-alloc '(:struct ,struct-name))
-		   :initarg :pointer)))
-
+		   :initarg :pointer)
+	  (len :initform 1
+	       :initarg :len
+	       :reader len)))
        
-       (defmethod initialize-instance ((this ,name) &key)
-	 (setf (slot-value this 'pointer) (foreign-alloc '(:struct ,struct-name))))
+       (defmethod initialize-instance ((this ,name) &key (len 1))
+	 (setf (slot-value this 'pointer) (foreign-alloc '(:struct ,struct-name) :count (setf (slot-value this 'len) len))))
        
        (defmethod translate-to-foreign ((this ,name) (type ,type-name))
 	 (slot-value this 'pointer))
@@ -172,6 +173,12 @@
        (defmethod translate-from-foreign (pointer (type ,type-name))
 	 (unless (null-pointer-p pointer)
 	   (make-instance ',name :pointer pointer)))
+
+       (defmethod struct-aref ((this ,name) (num integer))
+	 (cond ((zerop num) this)
+	       ((< num 0) (error "Negitive index detected!"))
+	       ((>= num (len this)) (error "Index beyond bounds!"))
+	       (t (make-instance ',name :pointer (cffi:mem-aptr (slot-value this 'pointer) '(:struct ,struct-name) num)))))
 
        (defmethod destroy ((this ,name))
 	 (foreign-free (slot-value this 'pointer))
@@ -227,7 +234,6 @@
 
 
 (create-struct-class (contact dContact)
-  (surface dSurfaceParameters)
-  (geom dContactGeom)
+  (surface (:struct surface-parameters-struct))
+  (geom (:struct contact-geometry-struct))
   (fdir1 dVector3))
-

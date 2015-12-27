@@ -128,7 +128,7 @@
   (body dBodyID))
 
 
-(defcfun-rename-function ("dBodyIsEnabled") :int
+(defcfun-rename-function ("dBodyIsEnabled") :boolean
   (body dBodyID))
 
 (defcfun-rename-function ("dBodyGetFirstGeom") dGeomID
@@ -244,7 +244,7 @@
 (defcfun-rename-function ("dBodySetKinematic") :void 
   (body dBodyID))
 
-(defcfun-rename-function ("dBodyIsKinematic") :int 
+(defcfun-rename-function ("dBodyIsKinematic") :boolean
   (body dBodyID))
 
 (defcfun-rename-function ("dBodyVectorToWorld") :void
@@ -591,7 +591,7 @@
   (o1 dGeomID)
   (o2 dGeomID)
   (flags :int)
-  (contact (:pointer dContactGeom))
+  (contact :pointer)
   (skip :int))
 
 (defcfun-rename-function ("dJointCreateContact") dContactJointID
@@ -633,5 +633,5 @@
   (world dWorldID)
   (auto-disable :int))
 
-(defcfun-rename-function ("dWorldGetAutoDisableFlag") :int
+(defcfun-rename-function ("dWorldGetAutoDisableFlag") :boolean
   (world dWorldID))
