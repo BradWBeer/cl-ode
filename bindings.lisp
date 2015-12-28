@@ -72,7 +72,14 @@
 (defcfun-rename-function ("dBodyGetPosition") dVector3
   (body dBodyID))
 
-(defcfun-rename-function ("dBodyGetRotation") dVector3
+(defcfun-rename-function ("dBodyGetRotation") dMatrix3
+  (body dBodyID))
+
+(defcfun-rename-function ("dBodySetQuaternion") :void
+  (body dBodyID)
+  (q dQuaternion))
+
+(defcfun-rename-function ("dBodyGetQuaternion") dQuaternion
   (body dBodyID))
 
 (defcfun-rename-function ("dBodyGetMass") :void
