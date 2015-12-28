@@ -1,4 +1,5 @@
 (in-package #:cl-ode)
+(declaim (optimize (speed 3)))
 
 (defclass proto-body () 
   ((move-handler :initform nil

@@ -1,6 +1,7 @@
 ;;;; cl-ode.lisp
-
 (in-package #:cl-ode)
+(declaim (optimize (speed 3)))
+
 (defvar *default-max-contacts* 25)  
 
 (cffi:defcallback near-callback :void ((data :pointer)

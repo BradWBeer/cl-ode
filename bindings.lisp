@@ -1,4 +1,5 @@
 (in-package #:cl-ode)
+(declaim (optimize (speed 3)))
 
 (cl:eval-when (:compile-toplevel :load-toplevel)
   (cl:unless (cl:fboundp 'swig-lispify-noprefix)
@@ -524,7 +525,6 @@
   (radius dReal)
   (length dReal))
 
-
 (defcfun-rename-function ("dCreateRay" Ray-Create) dRayID
   (space dSpaceID)
   (length dReal))
@@ -545,21 +545,35 @@
   (dy dReal) 
   (dz dReal))
 
-(defcfun-rename-function ("dGeomRayGet") :void
+(defcfun-rename-function ("dGeomRayGet" dGeomRayGet) :void
   (ray dRayID)
-  (start :pointer)
-  (dir :pointer))
+  (start dVector3)
+  (dir dVector3))
+
+(defmethod geom-ray-get ((this ray))
+  (cffi:with-foreign-objects ((start 'dVector3)
+			      (dir 'dVector3))
+    (dGeomRayGet this start dir)
+    (values start
+	    dir)))
 
 
 (defcfun-rename-function ("dGeomRaySetParams") :void 
   (ray dRayID)
   (first-contact :int) 
-  (backface-cull :int))
+  (backface-cull :boolean))
 
-;; (defcfun-rename-function ("dGeomRayGetParams") :void 
-;;   (ray dGeomID)
-;;   *FirstContact, int *BackfaceCull );
+(defcfun ("dGeomRayGetParams" dGeomRayGetParams) :void 
+  (ray dGeomID)
+  (FirstContact (:pointer :int))
+  (BackfaceCull (:pointer :int)))
 
+(defmethod geom-ray-get-params ((this ray))
+  (cffi:with-foreign-objects ((first-contact :int)
+			      (back-face-cull :int))
+    (dgeomraygetparams this first-contact back-face-cull)
+    (values (cffi:mem-aref  first-contact :int)
+	    (cffi:mem-aref  back-face-cull :int))))
 
 (defcfun-rename-function ("dGeomRaySetClosestHit") :void
   (ray dRayID)

@@ -1,54 +1,38 @@
 (in-package #:cl-ode)
+(declaim (optimize (speed 3)))
 
-
-(defclass physics-spring (physics-ray)
+(defclass spring (ray)
   ((springiness :initform 1
 		:initarg :springiness
 		:accessor springiness)
    (damping :initform .1
 	    :initarg :damping
 	    :accessor damping)))
-	    
+
+(defmethod close-callback :before ((this spring) (that geometry))
+
+  (let* ((b1 (geom-get-body this))
+	 (b2 (geom-get-body that)))
+
+    (when (or b1 b2)
+      (multiple-value-bind (depth position normal) (call-next-method) (declare (ignore normal position))
+
+	(multiple-value-bind (start direction) (Geom-Ray-Get this) (declare (ignore start))
+
+	  (let* ((v1 (if b1 (body-get-linear-vel b1) (make-zero-vector3)))
+		 (v2 (if b2 (body-get-linear-vel b2) (make-zero-vector3)))
+		 (speed (dot v1 v2))
+		 (len (geom-ray-get-length this))
+		 (x  (+ (* (- 1 (damping this)) speed)
+			(* (springiness this) (- depth len))))
+		 (force (multiply-vector x direction)))
+
+	    (when b1
+	      (body-add-force b1 (aref force 0) (aref force 1) (aref force 2)))
+
+	    (when b2
+	      (body-add-force b2 (- (aref force 0)) (- (aref force 1)) (- (aref force 2))))))))))
 
 
-
-
-(defmethod close-callback ((this physics-spring) (that physics-object))
-
-  (let* ((o1 (geometry this))
-  	 (o2 (geometry that))
-  	 (b1 (geom-get-body o1))
-  	 (b2 (geom-get-body o2)))
-    
-    (with-foreign-object (contact '(:struct dContact) *physics-max-contacts*)
-      (let ((gg (foreign-slot-pointer contact '(:struct ode::dContact) 'ode::geom)))
-	
-	
-	(let ((num-contacts (collide o1 o2 *physics-max-contacts* gg (foreign-type-size '(:struct ode::dContact)))))
-	  (unless (zerop num-contacts)
-	    
-	    (let ((distance (abs (foreign-slot-value gg '(:struct ode::dContactGeom) 'ode::depth))))
-
-	      ;;(format t "ray-callback b1 = ~A~%" distance)
-	      (multiple-value-bind (start dir) (Ray-Get this)
-		;;(format t "spring dir: ~A start: ~A~%" dir start)
-
-
-	      (let* ((vel (body-get-linear-vel b1))
-		     (len (ray-length this))
-		     (x  (+ (* (- 1 (damping this)) (aref vel 1))
-			    (* (springiness this) (abs (- (abs distance) len))))))
-		     ;; (normal-dir (sb-cga:dot-product (apply #'clinch:make-vector
-		     ;; 					    (subseq (map 'list (lambda (x)
-		     ;; 								 (coerce x 'single-float))
-		     ;; 							 dir) 0 3))
-		     ;; 				     (apply #'clinch:make-vector
-		     ;; 					    (subseq (map 'list (lambda (x)
-		     ;; 								 (coerce x 'single-float))
-		     ;; 							 vel) 0 3)))))
-
-		(body-set-linear-vel b1 (aref vel 0) x (aref vel 2)))))))))))
-
-
-(defmethod close-callback ((this physics-object) (that physics-ray))
+(defmethod close-callback ((this geometry) (that ray))
   (close-callback that this))

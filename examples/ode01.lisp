@@ -46,8 +46,6 @@
   (ode::body-enable *body*)
   (ode::body-set-position *body* 0 5 0)
   (dotimes (i n) 
-    (print i)
-    (format t "sphere enabled = ~A~%" (ode::body-is-enabled *body*))
     (ode:physics-step *world* *space*)))
 
 (test 10000)

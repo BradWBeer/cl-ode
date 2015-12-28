@@ -1,4 +1,5 @@
 ;;;; package.lisp
+(declaim (optimize (speed 3)))
 
 (defpackage #:cl-ode
   (:use #:cl #:cffi)

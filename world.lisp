@@ -1,4 +1,5 @@
 (in-package :cl-ode)
+(declaim (optimize (speed 3)))
 
 (defclass proto-world ()
   ((contact-group :initform (joint-group-create 0)

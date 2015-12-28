@@ -205,7 +205,6 @@
   (center dVector3)
   (inertia dMatrix3))
 
-
 (create-struct-class (surface-parameters dSurfaceParameters)
   (mode Contact-Enum)
   (mu dReal)
@@ -231,7 +230,6 @@
   (g2 dGeomID)
   (side1 :int)
   (side2 :int))
-
 
 (create-struct-class (contact dContact)
   (surface (:struct surface-parameters-struct))

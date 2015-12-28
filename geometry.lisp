@@ -1,4 +1,5 @@
 (in-package :cl-ode)
+(declaim (optimize (speed 3)))
 
 (defclass proto-geometry () 
   ((surface-mode :initform '(:bounce :soft-CFM :rolling)
@@ -35,8 +36,6 @@
 (create-pointer-subclass plane dPlaneID geometry dGeomID)
 (create-pointer-subclass cylinder dCylinderID geometry dGeomID)
 (create-pointer-subclass capsule dCapsuleID geometry dGeomID)
-(create-pointer-subclass ray dRayID geometry dGeomID)
-
 
 (defmethod body-get-transform ((this geometry))
   (let ((position (body-get-position this))
@@ -93,7 +92,6 @@
 		(* (surface-rhoN this) (surface-rhoN that)))))
     params)
 
-
 (defmethod close-callback ((o1 geometry) (o2 geometry))
 
   ;; get the bodies...if they have one.
@@ -114,13 +112,7 @@
 
 	  (combine-physics-objects o1 o2 surf)
 
-	  (describe surf)
-	  (format t "surf mode: ~A!~%" (cffi:foreign-slot-value (cffi:foreign-slot-pointer contact '(:struct contact-struct) 'surface) '(:struct surface-parameters-struct) 'mode))
-	  (format t "surf bounce: ~A!~%" (cffi:foreign-slot-value (cffi:foreign-slot-pointer contact '(:struct contact-struct) 'surface) '(:struct surface-parameters-struct) 'bounce))
-	  (format t "surf bounce-vel: ~A!~%" (cffi:foreign-slot-value (cffi:foreign-slot-pointer contact '(:struct contact-struct) 'surface) '(:struct surface-parameters-struct) 'bounce-vel))
-	  (format t "surf soft-cfm: ~A!~%" (cffi:foreign-slot-value (cffi:foreign-slot-pointer contact '(:struct contact-struct) 'surface) '(:struct surface-parameters-struct) 'soft-cfm))
-
-	(let ((num-contacts (collide o1
+	  (let ((num-contacts (collide o1
 				     o2
 				     *default-max-contacts*
 				     geom
