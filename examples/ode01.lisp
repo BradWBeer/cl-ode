@@ -37,7 +37,7 @@
 
 ;; Add a move handler to watch it go...
 (setf (ode::move-handler *body*)
-			 (lambda (x) (format t "move-handler: ~A~%" (ode:body-get-position x))))
+			 (lambda (x) (format t "~A move-handler: ~A~%" *body* (ode:body-get-position x))))
 				  
 
 ;; Test function, call 100x times...
@@ -45,7 +45,11 @@
 (defun test (n)
   (ode::body-enable *body*)
   (ode::body-set-position *body* 0 5 0)
-  (dotimes (i n) 
+  (ode:body-set-linear-vel *body* 0 0 0)
+
+  (dotimes (i n)
+    (format t "~A: *sphere* & *body*  Enabled: ~A~%" i (ode::body-is-enabled *body*))
+    
     (ode:physics-step *world* *space*)))
 
 (test 10000)

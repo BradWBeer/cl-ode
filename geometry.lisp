@@ -2,7 +2,13 @@
 (declaim (optimize (speed 3)))
 
 (defclass proto-geometry () 
-  ((surface-mode :initform '(:bounce :soft-CFM :rolling)
+  ((ghost :initform nil
+	  :initarg :ghost
+	  :accessor ghost)
+   (collision-handler :initform nil
+		      :initarg :collision-handler
+		      :accessor collision-handler)
+   (surface-mode :initform '(:bounce :soft-CFM :rolling)
 		 :initarg :mode
 		 :accessor surface-mode
 		 :type :int)
@@ -27,9 +33,7 @@
    (surface-slip1 :INITFORM 0 :INITARG :slip1 :ACCESSOR surface-slip1)
    (surface-slip2 :INITFORM 0 :INITARG :slip2 :ACCESSOR surface-slip2)))
 
-
 (create-pointer-type geometry dGeomID :destructor Geom-Destroy :superclass proto-geometry)
-
 
 (create-pointer-subclass sphere dSphereID geometry dGeomID)
 (create-pointer-subclass box dBoxID geometry dGeomID)
@@ -62,8 +66,6 @@
 
       (setf mode
 	    (union (surface-Mode this) (surface-Mode this)))
-
-      
       
       (setf mu       
 	    (max (surface-mu this) (surface-mu that)))
@@ -118,13 +120,7 @@
 				     geom
 				     (cffi:foreign-type-size '(:struct contact-struct)))))
 
-	  (unless (zerop num-contacts)
-
-	    
-	    ;; (format t "geo pos: ~A!~%" (cffi:foreign-slot-value  geom '(:struct contact-geometry-struct) 'pos))
-	    ;; (format t "geo depth: ~A!~%" (cffi:foreign-slot-value geom '(:struct contact-geometry-struct) 'depth))
-	    ;; (format t "g1 depth: ~A!~%" (cffi:foreign-slot-value  geom '(:struct contact-geometry-struct) 'g1))
-	    ;; (format t "g2 depth: ~A!~%" (cffi:foreign-slot-value  geom '(:struct contact-geometry-struct) 'g2))
+	  (unless (zerop num-contacts)	    
 	    
 	    (let* ((world (cond (b1 (body-get-world b1))
 				(b2 (body-get-world b2))
@@ -132,5 +128,10 @@
 		   (contact-group (ode::contact-group world)))
 	      
 	      (dotimes (i num-contacts)
-		(joint-attach (joint-create-contact world contact-group (cffi:mem-aptr contact '(:struct Contact-Struct) i)) b1 b2))))))))))
+		
+		(when (collision-handler o1) (funcall (collision-handler o1) o2) (cffi:mem-aptr contact '(:struct Contact-Struct) i))
+		(when (collision-handler o2) (funcall (collision-handler o2) o1) (cffi:mem-aptr contact '(:struct Contact-Struct) i))
+		
+		(unless (or (ghost o1) (ghost o2))
+		  (joint-attach (joint-create-contact world contact-group (cffi:mem-aptr contact '(:struct Contact-Struct) i)) b1 b2)))))))))))
 

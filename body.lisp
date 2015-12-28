@@ -26,7 +26,6 @@
   (body-set-position this (elt m 12) (elt m 13) (elt m 14))
   (body-set-rotation this m))
 
-
 (defmethod (setf move-handler) ((func null) (this body))
   (setf (slot-value this 'move-handler) nil)
   (body-set-moved-callback this nil))
