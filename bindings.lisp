@@ -42,13 +42,13 @@
            package))))))
 
 
-(defmacro defcfun-rename-function ((name &optional new-name) &rest rest)
+(defmacro defcfun-rename-function ((name &optional new-name (export t)) &rest rest)
   (let ((lisp-name (or new-name
 		       (swig-lispify-noprefix name 'function))))
     `(progn
        (defcfun (,name ,lisp-name)
 	     ,@rest)
-       (cl:export (swig-lispify-noprefix ,name 'function)))))
+       ,(when export `(cl:export (swig-lispify-noprefix ,name 'function))))))
 
 
 (defcfun-rename-function ("dGetConfiguration") :string)
@@ -82,15 +82,15 @@
 (defcfun-rename-function ("dBodyGetQuaternion") dQuaternion
   (body dBodyID))
 
-(defcfun-rename-function ("dBodyGetMass") :void
+(defcfun-rename-function ("dBodyGetMass" dbodygetmass) :void
   (body dBodyID)
   (mass dMass))
 
-;; (defgeneric body-get-mass (this))
-;; (defmethod body-get-mass ((this body))
-;;   (with-foreign-object (mass '(:struct dMass))
-;;     (dbodygetmass this mass)
-;;     mass))
+(defgeneric body-get-mass (this))
+(defmethod body-get-mass ((this body))
+  (let ((mass (make-instance 'ode::mass)))
+    (dbodygetmass this mass)
+    mass))
    
 (defcfun-rename-function ("dBodySetMass") :void
   (body dBodyID)

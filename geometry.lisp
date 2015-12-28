@@ -129,9 +129,12 @@
 	      
 	      (dotimes (i num-contacts)
 		
-		(when (collision-handler o1) (funcall (collision-handler o1) o2) (cffi:mem-aptr contact '(:struct Contact-Struct) i))
-		(when (collision-handler o2) (funcall (collision-handler o2) o1) (cffi:mem-aptr contact '(:struct Contact-Struct) i))
+		(let* ((current-contact (cffi:mem-aptr contact '(:struct Contact-Struct) i))
+		       (cc-object (make-instance 'contact :pointer current-contact)))
+
+		  (when (collision-handler o1) (funcall (collision-handler o1) o1 o2 cc-object))
+		  (when (collision-handler o2) (funcall (collision-handler o2) o2 o1 cc-object))
 		
-		(unless (or (ghost o1) (ghost o2))
-		  (joint-attach (joint-create-contact world contact-group (cffi:mem-aptr contact '(:struct Contact-Struct) i)) b1 b2)))))))))))
+		  (unless (or (ghost o1) (ghost o2))
+		    (joint-attach (joint-create-contact world contact-group current-contact) b1 b2))))))))))))
 

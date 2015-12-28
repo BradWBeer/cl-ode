@@ -39,14 +39,19 @@
 (setf (ode::move-handler *body*)
 			 (lambda (x) (format t "~A move-handler: ~A~%" *body* (ode:body-get-position x))))
 				  
+(setf (ode::collision-handler *sphere*)
+      (lambda (this other contact)
+	(format t "Collision detected with ~A & ~A~tcontact: ~A~%" this other contact)))
 
 ;; Test function, call 100x times...
 
 (defun test (n)
   (ode::body-enable *body*)
   (ode::body-set-position *body* 0 5 0)
-  (ode:body-set-linear-vel *body* 0 0 0)
-
+  (ode:body-set-linear-vel *body* 0 0 0) 
+  (ode:body-set-rotation *body* (make-array 12 :element-type 'single-float :initial-contents '(1.0 0.0 0.0 0.0
+											       0.0 1.0 0.0 0.0
+											       0.0 0.0 0.0 1.0)))
   (dotimes (i n)
     (format t "~A: *sphere* & *body*  Enabled: ~A~%" i (ode::body-is-enabled *body*))
     
