@@ -8,13 +8,13 @@
    (collision-handler :initform nil
 		      :initarg :collision-handler
 		      :accessor collision-handler)
-   (surface-mode :initform '(:bounce :soft-CFM :rolling)
+   (surface-mode :initform '(:bounce :rolling)
 		 :initarg :mode
 		 :accessor surface-mode
 		 :type :int)
    (surface-mu :INITFORM (infinity) :INITARG :mu :ACCESSOR surface-mu)
    (surface-mu2 :INITFORM 0 :INITARG :mu2 :ACCESSOR surface-mu2)
-   (surface-rho :INITFORM .1d0 :INITARG :rho :ACCESSOR surface-rho)
+   (surface-rho :INITFORM .1 :INITARG :rho :ACCESSOR surface-rho)
    (surface-rho2 :INITFORM 0 :INITARG :rho2 :ACCESSOR surface-rho2)
    (surface-rhon :INITFORM 0 :INITARG :rhon :ACCESSOR surface-rhon)
    (surface-bounce :INITFORM .9 :INITARG :bounce :ACCESSOR surface-bounce)
@@ -66,13 +66,15 @@
 
       (setf mode
 	    (union (surface-Mode this) (surface-Mode this)))
+
+      (setf soft-cfm (max (surface-soft-cfm this) (surface-soft-cfm that)))
       
       (setf mu       
 	    (max (surface-mu this) (surface-mu that)))
       
 	(when (member :mu2 mode)
 	  (setf mu2
-		(* (surface-mu2 this) (surface-mu2 that))))
+		(max (surface-mu2 this) (surface-mu2 that))))
 	
 	(when (member :bounce mode)
 	  
@@ -132,8 +134,8 @@
 		(let* ((current-contact (cffi:mem-aptr contact '(:struct Contact-Struct) i))
 		       (cc-object (make-instance 'contact :pointer current-contact)))
 
-		  (when (collision-handler o1) (funcall (collision-handler o1) o1 o2 cc-object))
-		  (when (collision-handler o2) (funcall (collision-handler o2) o2 o1 cc-object))
+		  (when (collision-handler o1) (funcall (collision-handler o1) o1 o2 current-contact)) ;;cc-object))
+		  (when (collision-handler o2) (funcall (collision-handler o2) o2 o1 current-contact)) ;;cc-object))
 		
 		  (unless (or (ghost o1) (ghost o2))
 		    (joint-attach (joint-create-contact world contact-group current-contact) b1 b2))))))))))))

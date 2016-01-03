@@ -321,6 +321,11 @@
   (body dBodyID)
   (scale dReal)) 
 
+(defcfun-rename-function ("dBodySetDamping") :void
+  (body dBodyID)
+  (scale dReal)) 
+
+
 (defcfun-rename-function ("dBodySetAngularDamping") :void
   (body dBodyID)
   (scale dReal))

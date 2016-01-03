@@ -1,9 +1,17 @@
 (ql:quickload :cl-ode)
 
+(defvar *world*)
+(defvar *space*)
+(defvar *body*)
+(defvar *plane*)
+(defvar *sphere*) 
+
+
 ;; Initialize
 (ode:init)	   
 
 ;; Create a world to play in...and set defaults...
+
 (setf *world* (ode::world-create))
 (ode::world-set-defaults *world*)
 (ode:world-set-gravity *world* 0 -10 0)

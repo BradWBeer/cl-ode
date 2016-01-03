@@ -21,9 +21,9 @@
 (defgeneric world-set-defaults (this &key))
 (defmethod world-set-defaults ((this world) &key)
   (world-set-gravity this 0 -6 0)
-  (world-set-cfm this 1e-5)
+  (world-set-cfm this .001)
   (world-set-damping this .001 .001)
-  (world-set-linear-damping-threshold this 0.00001)
+  (world-set-linear-damping-threshold this 0.001)
   (world-set-angular-damping-threshold this .005)
   (world-set-auto-disable-flag this 1))
 
