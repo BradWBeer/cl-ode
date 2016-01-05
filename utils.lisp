@@ -1,8 +1,11 @@
 (in-package #:cl-ode)
 (declaim (optimize (speed 3)))
 
+(defun make-vector3 (x y z w)
+  (make-array 4 :element-type 'single-float :initial-contents (list x y z w)))
+
 (defun make-zero-vector3 ()
-  (make-array 3 :element-type 'single-float :initial-element 0.0))
+  (make-array 4 :element-type 'single-float :initial-element 0.0))
 
 (defun make-zero-vector4 ()
   (make-array 4 :element-type 'single-float :initial-element 0.0))
