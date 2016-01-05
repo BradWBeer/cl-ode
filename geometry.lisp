@@ -40,6 +40,7 @@
 (create-pointer-subclass plane dPlaneID geometry dGeomID)
 (create-pointer-subclass cylinder dCylinderID geometry dGeomID)
 (create-pointer-subclass capsule dCapsuleID geometry dGeomID)
+(create-pointer-subclass convex dConvexID geometry dGeomID)
 
 (defmethod body-get-transform ((this geometry))
   (let ((position (body-get-position this))

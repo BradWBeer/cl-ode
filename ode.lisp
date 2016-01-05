@@ -5,8 +5,8 @@
 (defvar *default-max-contacts* 25)  
 
 (cffi:defcallback near-callback :void ((data :pointer)
-					       (o1 :pointer)
-					       (o2 :pointer))
+				       (o1 :pointer)
+				       (o2 :pointer))
   (declare (ignore data))
   (unless (pointer-eq o1 o2)
 

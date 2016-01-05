@@ -45,7 +45,7 @@
 (defmacro defcfun-rename-function ((name &optional new-name (export t)) &rest rest)
   (let ((lisp-name (or new-name
 		       (swig-lispify-noprefix name 'function))))
-    `(progn
+    `(prog1
        (defcfun (,name ,lisp-name)
 	     ,@rest)
        ,(when export `(cl:export (swig-lispify-noprefix ,name 'function))))))
@@ -593,6 +593,23 @@
 
 (defcfun-rename-function ("dGeomRayGetClosestHit") :int
   (ray dRayID))
+
+(defcfun-rename-function ("dGeomCreateConvex" dCreateConvex nil) dConvexID
+  (space dSpaceID)
+  (planes (:pointer dReal))
+  (planecount :int)
+  (points (:pointer dReal))
+  (pointcount :int)
+  (polygons (:pointer :unsigned-int)))
+
+(defcfun-rename-function ("dGeomSetConvex" dSetConvex nil) dConvexID
+  (space dSpaceID)
+  (planes (:pointer dReal))
+  (planecount :int)
+  (points (:pointer dReal))
+  (pointcount :int)
+  (polygons (:pointer :unsigned-int)))
+ 
 
 (defcfun-rename-function ("dSpaceDestroy") :void
   (space dSpaceID))
