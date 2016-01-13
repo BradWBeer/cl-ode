@@ -10,11 +10,11 @@
   (coerce x 'single-float))
 
 
-(defctype dreal (:wrapper :float
-			  :to-c  number->single-float))
-;; (defctype dreal (:wrapper :double
-;; 			  :to-c number->dreal
-;; 			  :from-c number->single-float))
+;; (defctype dreal (:wrapper :float
+;; 			  :to-c  number->single-float))
+(defctype dreal (:wrapper :double
+			  :to-c number->dreal
+			  :from-c number->single-float))
 
 
 (defmacro infinity (&optional (precision is-double-precision?))
