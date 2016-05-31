@@ -1,6 +1,5 @@
 (in-package #:cl-ode)
 
-(defvar is-double-precision? nil)
 (defvar *object-hash*)
 
 (defun number->dreal (x)
@@ -9,15 +8,20 @@
 (defun number->single-float (x)
   (coerce x 'single-float))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
 
-;; (defctype dreal (:wrapper :float
-;; 			  :to-c  number->single-float))
-(defctype dreal (:wrapper :double
-			  :to-c number->dreal
-			  :from-c number->single-float))
+  ;; figure out if this library is single or double precision...
+  (defconstant *is-double-precision?* (search "ODE_double_precision" (cffi:foreign-funcall "dGetConfiguration" :string)))
+  
+  (if *is-double-precision?*
+      (defctype dreal (:wrapper :double
+				:to-c number->dreal
+				:from-c number->single-float))
+      (defctype dreal (:wrapper :float
+				:to-c  number->single-float))))
 
 
-(defmacro infinity (&optional (precision is-double-precision?))
+(defmacro infinity (&optional (precision *is-double-precision?*))
   `(if (eql ,precision :single)
        (progn
          #+sbcl sb-ext:single-float-positive-infinity
