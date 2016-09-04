@@ -2,7 +2,7 @@
 (in-package #:cl-ode)
 (declaim (optimize (speed 3)))
 
-(defvar *default-max-contacts* 25)  
+(defvar *default-max-contacts* 25)
 
 (cffi:defcallback near-callback :void ((data :pointer)
 				       (o1 :pointer)
@@ -10,10 +10,10 @@
   (declare (ignore data))
   (unless (pointer-eq o1 o2)
 
-    
+
     (close-callback (gethash (cffi:pointer-address o1) *object-hash*)
 		    (gethash (cffi:pointer-address o2) *object-hash*))))
-		    
+
 
 (cffi:defcallback moved-callback :void ((body :pointer))
   (let ((body (gethash (cffi:pointer-address body) *object-hash*)))
@@ -21,7 +21,7 @@
       (body-moved-callback body))))
 
 
-(defcfun-rename-function ("dBodySetMovedCallback") :void 
+(defcfun-rename-function ("dBodySetMovedCallback") :void
   (body dBodyID)
   (callback :pointer))
 
@@ -29,7 +29,7 @@
 (defun near-handler (data o1 o2)
 
   (unless (cffi:pointer-eq o1 o2)
-    
+
     (let* ((lisp-object1 (gethash (pointer-address o1) *object-hash*))
 	   (lisp-object2 (gethash (pointer-address o2) *object-hash*)))
 
@@ -37,11 +37,16 @@
 
 	(close-callback lisp-object1 lisp-object2)))))
 
+(defvar *initialized* nil)
 
 (defun init ()
-  
-  (init-ode)	      
-  (setf *object-hash* (make-hash-table :test 'equal)))
+  (if (is-initialized?)
+      (warn "Will not attempt to initalize cl-ode as it seems to already be initialized")
+      (progn
+        (init-ode)
+        (setf *initialized* t)
+        (setf *object-hash* (make-hash-table :test 'equal))
+        t)))
 
 
 (defun physics-step (world space)
@@ -51,10 +56,10 @@
   (joint-group-empty (contact-group world)))
 
 (defun uninit ()
-
-  (close-ode)
+  (when (is-initialized?)
+    (close-ode)
+    (setf *initialized* nil))
   (setf *object-hash* nil))
-  
 
-
-
+(defun is-initialized? ()
+  *initialized*)

@@ -4,7 +4,7 @@
 (defpackage #:cl-ode
   (:use #:cl #:cffi)
   (:nicknames #:ode)
-    (:export 
+    (:export
 
      #:dReal #:dMass #:dVector3 #:dVector4 #:dMatrix3 #:dMatrix4 #:dMatrix6
      #:dWorldID #:dSpaceID #:dBodyID #:dGeomID #:dJointID #:dJointGroupID
@@ -30,6 +30,7 @@
      #:init
      #:physics-step
      #:uninit
+     #:is-initialized?
      #:body #:pointer
      #:enabled
 
@@ -41,5 +42,4 @@
      #:close-callback
      #:update
      #:ray-length #:physics-spring #:springiness #:damping
-     #:horizontal #:vertical #:load-player-camera
-     ))
+     #:horizontal #:vertical #:load-player-camera))
