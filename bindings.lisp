@@ -678,3 +678,80 @@
 
 (defcfun-rename-function ("dWorldGetAutoDisableFlag") :boolean
   (world dWorldID))
+
+(defcfun-rename-function ("dGeomHeightfieldDataCreate") dHeightfieldDataID)
+
+(defcfun-rename-function ("dGeomHeightfieldDataDestroy") :void 
+  (id dHeightfieldDataID))
+
+(defcfun-rename-function ("dGeomHeightfieldDataBuildByte") :void 
+  (id dHeightfieldDataID)
+  (height-data (:pointer :char))
+  (width dReal)
+  (depth dReal)
+  (width-Samples :int)
+  (depth-samples :int)
+  (scale dReal)
+  (offset dReal)
+  (thickness dReal)
+  (Wrap :boolean))
+
+(defcfun-rename-function ("dGeomHeightfieldDataBuildShort") :void 
+  (id dHeightfieldDataID)
+  (height-data (:pointer :short))
+  (width dReal)
+  (depth dReal)
+  (width-Samples :int)
+  (depth-samples :int)
+  (scale dReal)
+  (offset dReal)
+  (thickness dReal)
+  (Wrap :boolean))
+
+(defcfun-rename-function ("dGeomHeightfieldDataBuildSingle") :void 
+  (id dHeightfieldDataID)
+  (height-data (:pointer :float))
+  (width dReal)
+  (depth dReal)
+  (width-Samples :int)
+  (depth-samples :int)
+  (scale dReal)
+  (offset dReal)
+  (thickness dReal)
+  (Wrap :boolean))
+
+(defcfun-rename-function ("dGeomHeightfieldDataBuildDouble") :void 
+  (id dHeightfieldDataID)
+  (height-data (:pointer :double))
+  (width dReal)
+  (depth dReal)
+  (width-Samples :int)
+  (depth-samples :int)
+  (scale dReal)
+  (offset dReal)
+  (thickness dReal)
+  (Wrap :boolean))
+
+(defcfun-rename-function ("dGeomHeightfieldDataSetBounds") :void 
+  (id dHeightfieldDataID)
+  (min-height dReal)
+  (max-height dReal))
+
+(defcfun-rename-function ("dGeomHeightfieldDataSetBounds") :void 
+  (id dHeightfieldDataID)
+  (min-height dReal)
+  (max-height dReal))
+
+
+(defcfun-rename-function ("dCreateHeightfield") :void 
+  (space dSpaceID)
+  (data dHeightfieldDataID)
+  (placeable :boolean))
+
+(defcfun-rename-function ("dGeomHeightfieldSetHeightfieldData") :void 
+  (g dGeomID)
+  (data dHeightfieldDataID))
+
+(defcfun-rename-function ("dGeomHeightfieldSetHeightfieldData") dHeightfieldDataID
+  (id dGeomID))
+

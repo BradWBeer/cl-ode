@@ -41,12 +41,13 @@
 (create-pointer-subclass cylinder dCylinderID geometry dGeomID)
 (create-pointer-subclass capsule dCapsuleID geometry dGeomID)
 (create-pointer-subclass convex dConvexID geometry dGeomID)
+(create-pointer-subclass height-map dHeightfieldID geometry dGeomID)
 
 (defmethod body-get-transform ((this geometry))
   (let ((position (body-get-position this))
 	(rotation (body-get-rotation this)))
     (make-array 16
-		:element-type 'single-float
+		:element-type (if is-double-precision? 'double 'single-float)
 		:initial-contents (list (elt rotation 0) (elt rotation 4) (elt rotation 8)  0.0
 					(elt rotation 1) (elt rotation 5) (elt rotation 9)  0.0
 					(elt rotation 2) (elt rotation 6) (elt rotation 10) 0.0

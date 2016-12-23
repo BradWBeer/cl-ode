@@ -11,18 +11,18 @@
   (make-array 4 :element-type 'single-float :initial-element 0.0))
 
 (defun multiply-vector (s v)
-  (map '(SIMPLE-ARRAY SINGLE-FLOAT) (lambda (x)
+  (map `(SIMPLE-ARRAY ,(IF IS-DOUBLE-PRECISION? 'DOUBLE 'SINGLE-FLOAT)) (lambda (x)
 				      (* s x))
        v))
 
 (defun add-vectors (v1 v2)
-  (map '(SIMPLE-ARRAY SINGLE-FLOAT) #'- v1 v2))
+  (map `(SIMPLE-ARRAY ,(IF IS-DOUBLE-PRECISION? 'DOUBLE 'SINGLE-FLOAT)) #'- v1 v2))
 
 (defun subtract-vectors (v1 v2)
-  (map '(SIMPLE-ARRAY SINGLE-FLOAT) #'- v1 v2))
+  (map `(SIMPLE-ARRAY ,(IF IS-DOUBLE-PRECISION? 'DOUBLE 'SINGLE-FLOAT)) #'- v1 v2))
 
 (defun dot (v1 v2)
-  (map '(SIMPLE-ARRAY SINGLE-FLOAT) #'* v1 v2))
+  (map `(SIMPLE-ARRAY ,(IF IS-DOUBLE-PRECISION? 'DOUBLE 'SINGLE-FLOAT)) #'* v1 v2))
 
 (defmacro with-ode-object ((name value) &body body)
   (let ((hidden-name (gensym)))

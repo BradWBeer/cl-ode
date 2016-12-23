@@ -2,7 +2,7 @@
 
 (defvar *object-hash*)
 
-(defun number->dreal (x)
+(defun number->double (x)
   (coerce x 'double-float))
 
 (defun number->single-float (x)
@@ -11,28 +11,18 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
   ;; figure out if this library is single or double precision...
-  (defconstant *is-double-precision?* (search "ODE_double_precision" (cffi:foreign-funcall "dGetConfiguration" :string)))
+  (defconstant is-double-precision? (search "ODE_double_precision" (cffi:foreign-funcall "dGetConfiguration" :string)))
   
-  (if *is-double-precision?*
+  (if is-double-precision?
       (defctype dreal (:wrapper :double
-				:to-c number->dreal
+				:to-c number->double
 				:from-c number->single-float))
       (defctype dreal (:wrapper :float
-				:to-c  number->single-float))))
+      				:to-c  number->single-float))))
 
 
-(defmacro infinity (&optional (precision *is-double-precision?*))
-  `(if (eql ,precision :single)
-       (progn
-         #+sbcl sb-ext:single-float-positive-infinity
-         #+clozure 1S++0
-         #+abcl ext:single-float-positive-infinity
-         #+allegro excl::*infinity-single*
-         #+cmu ext:single-float-positive-infinity
-         #+(and ecl (not infinity-not-available)) si:single-float-positive-infinity
-         #+lispworks (coerce infinity$$ 'single-float)
-         #+scl ext:single-float-positive-infinity
-         #+t most-positive-single-float)
+(defmacro infinity (&optional (precision is-double-precision?))
+  `(if ,is-double-precision? 
        (progn
          #+sbcl sb-ext:double-float-positive-infinity
          #+clozure 1D++0
@@ -42,7 +32,17 @@
          #+(and ecl (not infinity-not-available)) si:double-float-positive-infinity
          #+lispworks #.(read-from-string "10E999")
          #+scl ext:double-float-positive-infinity
-         #+t most-positive-double-float)))
+         #+t most-positive-double-float)
+       (progn
+         #+sbcl sb-ext:single-float-positive-infinity
+         #+clozure 1S++0
+         #+abcl ext:single-float-positive-infinity
+         #+allegro excl::*infinity-single*
+         #+cmu ext:single-float-positive-infinity
+         #+(and ecl (not infinity-not-available)) si:single-float-positive-infinity
+         #+lispworks (coerce infinity$$ 'single-float)
+         #+scl ext:single-float-positive-infinity
+         #+t most-positive-single-float)))
 
 
 (defbitfield Contact-Enum
@@ -71,6 +71,8 @@
 (defctype dMatrix4 (:array dReal 16))
 (defctype dMatrix6 (:array dReal 48))
 (defctype dQuaternion (:array dReal 4))
+(defctype dHeightfieldDataID :pointer)
+
 
 (defgeneric destroy (this))
 
@@ -135,14 +137,12 @@
 
 (create-pointer-type geometry dGeomID :destructor Geom-Destroy :superclass proto-geometry)
 
-
 (create-pointer-subclass sphere dSphereID geometry dGeomID)
 (create-pointer-subclass box dBoxID geometry dGeomID)
 (create-pointer-subclass plane dPlaneID geometry dGeomID)
 (create-pointer-subclass cylinder dCylinderID geometry dGeomID)
 (create-pointer-subclass capsule dCapsuleID geometry dGeomID)
 (create-pointer-subclass ray dRayID geometry dGeomID)
-
 
 (defmacro struct-slot (name type slot)
   `(defmacro ,name (this) 

@@ -45,7 +45,7 @@
 
 ;; Add a move handler to watch it go...
 (setf (ode::move-handler *body*)
-			 (lambda (x) (format t "~A move-handler: ~A~%" *body* (ode:body-get-position x))))
+      (lambda (x) (format t "~A move-handler: ~A~%" *body* (ode:body-get-position x))))
 				  
 (setf (ode::collision-handler *sphere*)
       (lambda (this other contact)
@@ -65,4 +65,4 @@
     
     (ode:physics-step *world* *space*)))
 
-(test 10000)
+(test 100)

@@ -15,7 +15,7 @@
   (let ((position (body-get-position this))
 	(rotation (body-get-rotation this)))
     (make-array 16
-		:element-type 'single-float
+		:element-type (if is-double-precision? 'double-float 'single-float)
 		:initial-contents (list (elt rotation 0) (elt rotation 4) (elt rotation 8)  0.0
 					(elt rotation 1) (elt rotation 5) (elt rotation 9)  0.0
 					(elt rotation 2) (elt rotation 6) (elt rotation 10) 0.0
